@@ -1,7 +1,8 @@
 #ifndef UART_H_INCLUDED
 #define UART_H_INCLUDED
 
-#include "../common/common.h"
+#include <register/register.h>
+#include <common/common.h>
 
 class UARTManager {
     u8 *const baseAddress = (u8 *) 0x1fe001e0UL;

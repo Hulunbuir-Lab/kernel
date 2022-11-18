@@ -1,7 +1,7 @@
-using u64 = unsigned long long;
-using u32 = unsigned int;
-using u16 = unsigned short;
-using u8 = unsigned char;
+#ifndef REGISTER_H_INCLUDED
+#define REGISTER_H_INCLUDED
+
+#include <common/common.h>
 
 static inline u64 csrrd(u16 csrNum) {
     u64 value;
@@ -20,3 +20,5 @@ static inline void csrwr(u64 value, u16 csrNum) {
         : "r"(value), "i"(csrNum)
     );
 }
+
+#endif // REGISTER_H_INCLUDED
