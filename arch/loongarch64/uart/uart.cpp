@@ -22,7 +22,7 @@ UARTManager::UARTManager() {
 // use interrupts, for use by kernel printf() and
 // to echo characters. it spins waiting for the uart's
 // output register to be empty.
-void UARTManager::uartPutchar(u8 c) {
+void UARTManager::UARTPutchar(u8 c) {
 
     // wait for Transmit Holding Empty to be set in LSR
     while((*(baseAddress + 5) & (1 << 5)) == 0);

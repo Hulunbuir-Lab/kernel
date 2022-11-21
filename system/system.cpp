@@ -1,9 +1,11 @@
 #include "system.h"
-SystemManager::SystemManager()
-{
-    mUARTManager.uartPutchar('H');
-    mUARTManager.uartPutchar('o');
-    mUARTManager.uartPutchar('l');
-    mUARTManager.uartPutchar('a');
-    mUARTManager.uartPutchar('!');
+
+SystemManager::SystemManager() {}
+
+void SystemManager::Run() {
+    mUARTManager.UARTPutchar('H');
+    mUARTManager.UARTPutchar('o');
+    mUARTManager.UARTPutchar('l');
+    mUARTManager.UARTPutchar('a');
+    mUARTManager.UARTPutchar('!');
 }
