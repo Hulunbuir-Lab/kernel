@@ -9,10 +9,11 @@ SOURCES = $(wildcard arch/loongarch64/uart/*.cpp \
 OBJS = $(SOURCES:%.cpp=%.o)
 
 kernel: $(OBJS)
-	@$(LD) $^ -o kernel $(LDFLAGS)
+	$(LD) $^ -o kernel $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	@find . -name \*.o -exec rm {} \;
+	find . -name \*.o -exec rm {} \;
+	if [ -f kernel ]; then rm kernel; fi
