@@ -1,7 +1,7 @@
 #ifndef REGISTER_H_INCLUDED
 #define REGISTER_H_INCLUDED
 
-#include <common/common.h>
+#include <common/variable/variable.h>
 
 static inline u64 csrrd(u16 csrNum) {
     u64 value;

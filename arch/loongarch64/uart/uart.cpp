@@ -22,9 +22,26 @@ UARTManager::UARTManager() {
 // use interrupts, for use by kernel printf() and
 // to echo characters. it spins waiting for the uart's
 // output register to be empty.
-void UARTManager::UARTPutchar(u8 c) {
+void UARTManager::UARTPutchar(char c) {
 
     // wait for Transmit Holding Empty to be set in LSR
     while((*(baseAddress + 5) & (1 << 5)) == 0);
     *baseAddress = c;
+}
+
+void UARTManager::UARTPut(const char* x)
+{
+    u64 n = strlen(x);
+    for (int i = 0; i < n; ++i) {
+        UARTPutchar(x[i]);
+    }
+}
+
+template<typename T>
+void UARTManager::UARTPut(T a)
+{
+    while (a) {
+        UARTPutchar(a % 10 + '0');
+        a /= 10;
+    }
 }

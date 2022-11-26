@@ -1,5 +1,5 @@
 OUTPUT_ARCH( "loongarch" )
-ENTRY( kernelMain )
+ENTRY( start )
 
 SECTIONS
 {
