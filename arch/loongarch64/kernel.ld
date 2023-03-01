@@ -17,13 +17,14 @@ SECTIONS
     *(.bss)
   }
 
-  acpiAddress = .;
-  . += 8;
-  memMapAddress = .;
-  . += 8;
-  memMapSize = .;
-  . += 8;
-  memMapDescriptorSize = .;
+  .rodata : {
+    *(.rodata)
+  }
+
+  .stack : {
+    *(.stack)
+  }
+
   /DISCARD/ :
   {
     *(.comment)

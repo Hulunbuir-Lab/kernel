@@ -1,6 +1,6 @@
 #include <uart.h>
 
-UARTManager::UARTManager(_kU8 *addr) :baseAddress(addr){
+UART::UART(u8 *addr) :baseAddress(addr){
     // disable interrupts
     *(baseAddress + 1) = 0;
     // special mode to set baud rate
@@ -22,22 +22,22 @@ UARTManager::UARTManager(_kU8 *addr) :baseAddress(addr){
 // use interrupts, for use by kernel printf() and
 // to echo characters. it spins waiting for the uart's
 // output register to be empty.
-void UARTManager::UARTPutchar(char c) {
+void UART::UARTPutchar(char c) {
 
     // wait for Transmit Holding Empty to be set in LSR
     while((*(baseAddress + 5) & (1 << 5)) == 0);
     *baseAddress = c;
 }
 
-void UARTManager::UARTPut(const char* x)
+void UART::UARTPut(const char* x)
 {
-    _kU32 n = _kStrlen(x);
+    u32 n = _kStrlen(x);
     for (int i = 0; i < n; ++i) {
         UARTPutchar(x[i]);
     }
 }
 
-void UARTManager::UARTPut(char x)
+void UART::UARTPut(char x)
 {
     UARTPutchar(x);
 }

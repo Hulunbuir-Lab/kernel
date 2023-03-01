@@ -3,18 +3,18 @@
 
 #include <util.h>
 
-class UARTManager {
-    _kU8 *const baseAddress;
+class UART {
+    u8 *const baseAddress;
     void UARTPutchar(char c);
     template <typename T>
-    void UARTPutint(T x, _kU16 s = 10)
+    void UARTPutint(T x, u16 s = 10)
     {
         if (x == 0) {
             return;
         }
         else {
             UARTPutint(x / s, s);
-            _kU16 t = x % s;
+            u16 t = x % s;
             if (t >= 0 && t <= 9) {
                 UARTPutchar(t + '0');
             } else {
@@ -23,7 +23,7 @@ class UARTManager {
         }
     }
 public:
-    UARTManager(_kU8 *addr);
+    UART(u8 *addr);
     template<typename T>
     void UARTPut(T x)
     {
@@ -37,7 +37,7 @@ public:
         UARTPutchar('0');
         UARTPutchar('x');
         if (x == 0) UARTPutchar('0');
-        else UARTPutint((_kU64) x, 16);
+        else UARTPutint((u64) x, 16);
 
     }
 

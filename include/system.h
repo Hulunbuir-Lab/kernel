@@ -6,11 +6,11 @@
 struct KernelInfo {
   void *xdspAddress;
   void *memMapAddress;
-  _kU64 memMapSize;
-  _kU64 memMapDescriptorSize;
+  u64 memMapSize;
+  u64 memMapDescriptorSize;
 };
 
-enum efiMemType: _kU64{
+enum efiMemType: u64{
   EfiReservedMemoryType,
   EfiLoaderCode,
   EfiLoaderData,
@@ -31,21 +31,21 @@ enum efiMemType: _kU64{
 
 struct efiMemDescriptor {
     efiMemType type;
-    _kU64 phyStart;
-    _kU64 virtStart;
-    _kU64 pageNum;
-    _kU64 attr;
+    u64 phyStart;
+    u64 virtStart;
+    u64 pageNum;
+    u64 attr;
 };
 
-class SystemManager {
+class System {
     void *acpiBase;
-    _kU64 efiMemMapStart;
-    _kU64 efiMemMapEnd;
-    _kU64 efiMemMapDescriptorSize;
+    u64 efiMemMapStart;
+    u64 efiMemMapEnd;
+    u64 efiMemMapDescriptorSize;
 
-    UARTManager uPut;
+    UART uPut;
 public:
-    SystemManager(KernelInfo & info);
+    System(KernelInfo & info);
     void Run();
 };
 

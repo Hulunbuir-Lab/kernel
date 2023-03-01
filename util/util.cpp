@@ -9,8 +9,8 @@ void _kSwap(T& a, T& b)
     b = c;
 }
 
-_kU32 _kStrlen(const char* s) {
-    _kU32 c = 0;
+u32 _kStrlen(const char* s) {
+    u32 c = 0;
     for (const char *pt = s; *pt != '\0'; ++pt, ++c);
     return c;
 }
