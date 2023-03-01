@@ -1,5 +1,5 @@
 OUTPUT_ARCH( "loongarch" )
-ENTRY( start )
+ENTRY( kernelMain )
 
 SECTIONS
 {
@@ -17,6 +17,13 @@ SECTIONS
     *(.bss)
   }
 
+  acpiAddress = .;
+  . += 8;
+  memMapAddress = .;
+  . += 8;
+  memMapSize = .;
+  . += 8;
+  memMapDescriptorSize = .;
   /DISCARD/ :
   {
     *(.comment)

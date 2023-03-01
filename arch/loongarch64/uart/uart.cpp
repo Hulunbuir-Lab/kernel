@@ -1,6 +1,6 @@
-#include "uart.h"
+#include <uart.h>
 
-UARTManager::UARTManager() {
+UARTManager::UARTManager(_kU8 *addr) :baseAddress(addr){
     // disable interrupts
     *(baseAddress + 1) = 0;
     // special mode to set baud rate
@@ -31,17 +31,13 @@ void UARTManager::UARTPutchar(char c) {
 
 void UARTManager::UARTPut(const char* x)
 {
-    u64 n = strlen(x);
+    _kU32 n = _kStrlen(x);
     for (int i = 0; i < n; ++i) {
         UARTPutchar(x[i]);
     }
 }
 
-template<typename T>
-void UARTManager::UARTPut(T a)
+void UARTManager::UARTPut(char x)
 {
-    while (a) {
-        UARTPutchar(a % 10 + '0');
-        a /= 10;
-    }
+    UARTPutchar(x);
 }

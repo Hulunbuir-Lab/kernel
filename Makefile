@@ -1,18 +1,17 @@
 .PHONY: clean
 
-CXXFLAGS = -march=$(ARCH) -mabi=$(ABI) -nostdlib -I. -Iarch/$(ARCH)/
-LDFLAGS = -Tkernel.ld
+CXXFLAGS = -march=$(ARCH) -mabi=$(ABI) -g -ffreestanding -fno-stack-protector -nostartfiles -Iinclude
+LDFLAGS = -Tarch/$(ARCH)/kernel.ld -ffreestanding -fno-stack-protector -nostartfiles
 SOURCES = $(wildcard system/*.cpp \
-		     common/string/*.cpp \
-		     common/variable/*.cpp \
+		     util/*.cpp \
 		     arch/$(ARCH)/uart/*.cpp \
 		     kernel.cpp \
 	   )
 
-OBJS = $(SOURCES:%.cpp=%.o) loader.o
+OBJS = $(SOURCES:%.cpp=%.o)
 
 kernel: $(OBJS)
-	$(LD) $^ -o kernel $(LDFLAGS)
+	$(CXX) $^ -o kernel $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

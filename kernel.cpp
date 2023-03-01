@@ -1,11 +1,8 @@
-#include <system/system.h>
+#include <system.h>
 
-extern "C" void kernelMain() {
-    SystemManager os;
+extern "C" void kernelMain(KernelInfo info) {
+    SystemManager os(info);
     os.Run();
     while (1);
 }
 
-extern "C" void __stack_chk_fail(void) {}
-
-extern "C" void __stack_chk_guard(void) {}
