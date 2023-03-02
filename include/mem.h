@@ -7,8 +7,8 @@
 #define PAGE_GROUP_SIZE_BIT 12
 #define PAGE_SIZE_BIT 12
 #define PAGE_SIZE (1 << PAGE_SIZE_BIT)
-#define HIGH_MEM_START 0x90000000
-#define PAGEINFO_SIZE_BIT 4
+#define PAGEINFO_SIZE_BIT 5
+#define HI
 
 struct KernelInfo {
   void *xdspAddress;
@@ -48,7 +48,7 @@ struct Page {
 	Page *prev;
 	Page *next;
 	u64 refCount;
-    u64 reserve;
+    u64 sizeBit;
 };
 
 class VNode {
@@ -68,21 +68,26 @@ class MemSpace {
 };
 
 class PageAllocator {
-    Page *pageInfo = (Page*) HIGH_MEM_START;
+    Page *pageInfo;
 	std::array<Page*, PAGE_GROUP_SIZE_BIT> buddyHeadList;
-	void addPage(Page* t);
-	void deletePage(Page* t);
-	Page* getBuddyPage(Page *t);
+	Page* getBuddyPage(Page *t) {
+      return (Page *)((u64)t ^ (1 << (t->sizeBit + PAGEINFO_SIZE_BIT)));
+    }
+    void setupPage(Page* t, u8 sizeBit) {
+      t->sizeBit = sizeBit;
+    }
+    void addPageToBuddy(Page* t);
+    void deletePageFromBuddy(Page *t);
 public:
-	PageAllocator();
+	PageAllocator(u64 start, u64 end);
 	void* pageToAddr(Page* t) {
-      return (void *)(((t - pageInfo) << (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT)) + HIGH_MEM_START);
+      return (void *)(((t - pageInfo) << (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT)) + (u64) pageInfo);
     }
-	Page* addrToPage(void* t) {
-      return pageInfo + (((u64) t - HIGH_MEM_START) >> (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT));
+	Page* addrToPage(u64 t) {
+      return pageInfo + ((t - (u64) pageInfo) >> (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT));
     }
-	void* allocMem(u8 sizeBit);
-	void freeMem(u8 sizeBit);
+	Page* allocPage(u8 sizeBit);
+	void freePage(Page* t);
 };
 
 #endif
