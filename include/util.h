@@ -46,4 +46,8 @@ inline T getPartical(T val, u8 high, u8 low) {
     return (val >> low) % (1 << (high - low + 1));
 }
 
+inline u64 upAlign(u64 addr, u8 sizeBit) {
+    return addr + (1ull << sizeBit) & (~((1ull << sizeBit) - 1));
+}
+
 #endif // UTIL_H_INCLUDED

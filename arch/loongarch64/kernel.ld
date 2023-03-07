@@ -29,6 +29,5 @@ SECTIONS
   {
     *(.comment)
   }
-
-  KernelEnd = .
+  KernelEnd = .;
 }

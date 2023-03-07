@@ -76,10 +76,12 @@ public:
 };
 
 class DirectZone : Zone {
+public:
     DirectZone(u64 start, u64 end): Zone(start, end){}
 };
 
 class DynamicZone : Zone {
+public:
     DynamicZone(u64 start, u64 end): Zone(start, end){}
 };
 
