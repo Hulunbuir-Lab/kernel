@@ -29,15 +29,17 @@ void UART::UARTPutchar(char c) {
     *baseAddress = c;
 }
 
-void UART::UARTPut(const char* x)
+UART & UART::operator << (const char* x)
 {
-    u32 n = _kStrlen(x);
+    u32 n = kStrlen(x);
     for (int i = 0; i < n; ++i) {
         UARTPutchar(x[i]);
     }
+    return *this;
 }
 
-void UART::UARTPut(char x)
+UART & UART::operator << (char x)
 {
     UARTPutchar(x);
+    return *this;
 }

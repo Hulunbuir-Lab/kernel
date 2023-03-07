@@ -1,9 +1,9 @@
 OUTPUT_ARCH( "loongarch" )
-ENTRY( kernelMain )
+ENTRY( _start )
 
 SECTIONS
 {
-  . = 0x200000;
+  . = 0xA04000;
 
   .text : {
     *(.text)
@@ -29,4 +29,6 @@ SECTIONS
   {
     *(.comment)
   }
+
+  KernelEnd = .
 }

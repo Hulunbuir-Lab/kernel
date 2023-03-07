@@ -8,7 +8,7 @@ SOURCES = $(wildcard system/*.cpp \
 		     kernel.cpp \
 	   )
 
-OBJS = $(SOURCES:%.cpp=%.o)
+OBJS = $(SOURCES:%.cpp=%.o) arch/$(ARCH)/loader.o
 
 kernel: $(OBJS)
 	$(CXX) $^ -o kernel $(LDFLAGS)
@@ -16,7 +16,7 @@ kernel: $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o: %.s	
+%.o: %.s
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:

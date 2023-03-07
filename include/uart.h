@@ -25,24 +25,25 @@ class UART {
 public:
     UART(u8 *addr);
     template<typename T>
-    void UARTPut(T x)
+    UART & operator << (T x)
     {
         if (x == 0) UARTPutchar('0');
         else UARTPutint(x);
+        return *this;
     }
 
     template <typename T>
-    void UARTPut(T* x)
+    UART & operator << (T* x)
     {
         UARTPutchar('0');
         UARTPutchar('x');
         if (x == 0) UARTPutchar('0');
         else UARTPutint((u64) x, 16);
-
+        return *this;
     }
 
-    void UARTPut(char x);
-    void UARTPut(const char *x);
+    UART & operator << (char x);
+    UART & operator << (const char *x);
 };
 
 #endif // UART_H_INCLUDED

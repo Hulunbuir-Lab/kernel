@@ -1,36 +1,40 @@
 #include <mem.h>
 
-PageAllocator::PageAllocator(u64 start, u64 end)
+void PageAllocator::SetPageInfo(u64 pageInfoAddress)
 {
-    pageInfo = (Page*) start;
+    pageInfo = (Page *) pageInfoAddress;
+}
+
+void PageAllocator::AddArea(u64 start, u64 end, bool isMaskedAsIllegal)
+{
     u8 currentPageSizeBit = PAGE_GROUP_SIZE_BIT - 1;
     Page *t;
     for (u64 pt = start; pt < end; pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
         while (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) > end) --currentPageSizeBit;
-        t = addrToPage(pt);
-        setupPage(t, currentPageSizeBit);
-        addPageToBuddy(t);
+        t = AddrToPage(pt);
+        setupPage(t, isMaskedAsIllegal ? PAGE_GROUP_SIZE_BIT : currentPageSizeBit);
+        if (!isMaskedAsIllegal) addPageToBuddy(t);
     }
 }
 
 void PageAllocator::addPageToBuddy(Page* t)
 {
-    if (buddyHeadList[t->sizeBit]) {
-        t->next = buddyHeadList[t->sizeBit];
-        buddyHeadList[t->sizeBit]->prev = t;
+    if (buddyHeadList[t->SizeBit]) {
+        t->Next = buddyHeadList[t->SizeBit];
+        buddyHeadList[t->SizeBit]->Prev = t;
     }
-    buddyHeadList[t->sizeBit] = t;
+    buddyHeadList[t->SizeBit] = t;
 }
 
 void PageAllocator::deletePageFromBuddy(Page* t)
 {
-    if (t->next) t->next->prev = t->prev;
-    if (t->prev) t->prev->next = t->next;
-    else buddyHeadList[t->sizeBit] = t->next;
-    t->next = t->prev = nullptr;
+    if (t->Next) t->Next->Prev = t->Prev;
+    if (t->Prev) t->Prev->Next = t->Next;
+    else buddyHeadList[t->SizeBit] = t->Next;
+    t->Next = t->Prev = nullptr;
 }
 
-Page* PageAllocator::allocPage(u8 sizeBit) {
+Page* PageAllocator::AllocPage(u8 sizeBit) {
     Page *p = nullptr;
     for (u8 i = sizeBit; i < PAGE_GROUP_SIZE_BIT; ++i) {
         if (buddyHeadList[sizeBit] != nullptr) {
@@ -40,27 +44,27 @@ Page* PageAllocator::allocPage(u8 sizeBit) {
     }
     deletePageFromBuddy(p);
     Page *buddy;
-    if (p -> sizeBit != sizeBit) {
-        for (; p->sizeBit > sizeBit; --p->sizeBit) {
+    if (p -> SizeBit != sizeBit) {
+        for (; p->SizeBit > sizeBit; --p->SizeBit) {
             buddy = getBuddyPage(p);
-            setupPage(buddy, p->sizeBit - 1);
+            setupPage(buddy, p->SizeBit - 1);
             addPageToBuddy(buddy);
         }
     }
-    ++p->refCount;
+    ++p->RefCount;
     return p;
 }
 
-void PageAllocator::freePage(Page* t)
+void PageAllocator::FreePage(Page* t)
 {
-    --t->refCount;
-    if (t->refCount != 0) return;
+    --t->RefCount;
+    if (t->RefCount != 0) return;
     Page *buddy;
-    for (; t->sizeBit < PAGE_GROUP_SIZE_BIT; ++t->sizeBit) {
+    for (; t->SizeBit < PAGE_GROUP_SIZE_BIT; ++t->SizeBit) {
         buddy = getBuddyPage(t);
-        if (buddy->refCount == 0) {
+        if (buddy->RefCount == 0) {
             deletePageFromBuddy(buddy);
-            setupPage(buddy, t->sizeBit);
+            setupPage(buddy, t->SizeBit);
             t = buddy - t > 0 ? t : buddy;
         } else {
             break;

@@ -2,6 +2,10 @@
 #define SYSTEM_H_INCLUDED
 
 #include <uart.h>
+#include <mem.h>
+#include <util.h>
+
+extern void* KernelEnd;
 
 class System {
     void *acpiBase;
@@ -10,8 +14,13 @@ class System {
     u64 efiMemMapDescriptorSize;
 
     UART uPut;
+    PageAllocator pageAllocator;
+    MemSpace kernelSpace;
+    DirectZone kernelDirectZone;
+    DynamicZone kernelDynamicZone;
 public:
-    System(KernelInfo & info);
+    System();
+    void InitMem(KernelInfo & info);
     void Run();
 };
 

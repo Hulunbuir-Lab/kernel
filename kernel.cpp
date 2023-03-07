@@ -1,8 +1,8 @@
 #include <system.h>
 
-extern "C" void kernelMain(KernelInfo info) {
-    System os(info);
+extern "C" void KernelMain(KernelInfo info) {
+    System os;
+    os.InitMem(info);
     os.Run();
-    while (1);
 }
 
