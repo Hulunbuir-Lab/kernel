@@ -16,7 +16,6 @@ class System {
     u64 efiMemMapEnd;
     u64 efiMemMapDescriptorSize;
 
-    UART uPut;
     PageAllocator pageAllocator;
     MemSpace kernelSpace;
     DirectZone kernelDirectZone;

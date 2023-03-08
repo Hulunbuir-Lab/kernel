@@ -1,5 +1,8 @@
 #include <mem.h>
 
+PageAllocator::PageAllocator(){}
+
+
 void PageAllocator::SetPageInfo(u64 pageInfoAddress)
 {
     pageInfo = (Page *) pageInfoAddress;
@@ -9,8 +12,9 @@ void PageAllocator::AddArea(u64 start, u64 end, bool isMaskedAsIllegal)
 {
     u8 currentPageSizeBit = PAGE_GROUP_SIZE_BIT - 1;
     Page *t;
-    for (u64 pt = start; pt < end; pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
-        while (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) > end) --currentPageSizeBit;
+    for (u64 pt = start; pt <= end; pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
+        uPut << pt << '\n';
+        while (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) - 1 > end) --currentPageSizeBit;
         t = AddrToPage(pt);
         setupPage(t, isMaskedAsIllegal ? PAGE_GROUP_SIZE_BIT : currentPageSizeBit);
         if (!isMaskedAsIllegal) addPageToBuddy(t);

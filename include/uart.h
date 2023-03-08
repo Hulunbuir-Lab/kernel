@@ -46,4 +46,6 @@ public:
     UART & operator << (const char *x);
 };
 
+extern UART uPut;
+
 #endif // UART_H_INCLUDED

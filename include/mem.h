@@ -2,7 +2,7 @@
 #define MEM_H
 
 #include <util.h>
-#include <array>
+#include <uart.h>
 
 #define PAGE_GROUP_SIZE_BIT 12
 #define PAGE_SIZE_BIT 12

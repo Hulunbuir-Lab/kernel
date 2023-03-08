@@ -1,5 +1,7 @@
 #include <uart.h>
 
+UART uPut((u8 *)0x1fe001e0);
+
 UART::UART(u8 *addr) :baseAddress(addr){
     // disable interrupts
     *(baseAddress + 1) = 0;
@@ -18,10 +20,6 @@ UART::UART(u8 *addr) :baseAddress(addr){
     *(baseAddress + 1) = 0x03;
 }
 
-// alternate version of uartputc() that doesn't
-// use interrupts, for use by kernel printf() and
-// to echo characters. it spins waiting for the uart's
-// output register to be empty.
 void UART::UARTPutchar(char c) {
 
     // wait for Transmit Holding Empty to be set in LSR
