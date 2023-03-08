@@ -50,4 +50,11 @@ inline u64 upAlign(u64 addr, u8 sizeBit) {
     return addr + (1ull << sizeBit) & (~((1ull << sizeBit) - 1));
 }
 
+class Mutex {
+    u32 locked = 0;
+public:
+    void Lock();
+    void Unlock();
+};
+
 #endif // UTIL_H_INCLUDED
