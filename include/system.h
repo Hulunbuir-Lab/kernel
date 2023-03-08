@@ -5,24 +5,17 @@
 #include <mem.h>
 #include <util.h>
 
-extern void* KernelEnd;
-
 class System {
-    const u64 separator = upAlign((u64 ) &KernelEnd, PAGE_SIZE_BIT);
-    const u64 vaddrEnd = 1ull << (getPartical(getCPUCFG(1), 19, 12) - 1);
-
     void *acpiBase;
     u64 efiMemMapStart;
     u64 efiMemMapEnd;
     u64 efiMemMapDescriptorSize;
 
-    PageAllocator pageAllocator;
-    MemSpace kernelSpace;
-    DirectZone kernelDirectZone;
-    DynamicZone kernelDynamicZone;
+    void InitPage();
+    void InitMem();
 public:
-    System();
-    void InitMem(KernelInfo & info);
+    System(KernelInfo& info);
+    void Init();
     void Run();
 };
 

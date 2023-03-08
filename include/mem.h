@@ -55,7 +55,7 @@ class MemSpace;
 class Zone {
 public:
     Zone(u64 start, u64 end) :VStart(start), VEnd(end){}
-	virtual void OnPageFault();
+	virtual void OnPageFault(u64 vaddr);
 	u64 VStart;
 	u64 VEnd;
 	Zone *Left;
@@ -111,5 +111,23 @@ public:
     void AddArea(u64 start, u64 end, bool isMaskedAsIllegal);
     void ListPage();
 };
+
+class MMU {
+public:
+    MMU(u64 address);
+    void AddItem(u64 vaddr, u64 paddr);
+    void DeleteItem(u64 vaddr);
+    u64 V2P(u64 vaddr);
+    u64 P2V(u64 paddr);
+};
+
+extern void* KernelEnd;
+extern const u64 separator;
+extern const u64 vaddrEnd;
+
+extern PageAllocator pageAllocator;
+extern MemSpace kernelSpace;
+extern DirectZone kernelDirectZone;
+extern MemSpace* currentMemSpace;
 
 #endif
