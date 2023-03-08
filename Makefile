@@ -1,7 +1,7 @@
 .PHONY: clean
 
 CXXFLAGS = -march=$(ARCH) -mabi=$(ABI) -g -ffreestanding -fno-stack-protector -nostartfiles -Iinclude
-LDFLAGS = -Tarch/$(ARCH)/kernel.ld -ffreestanding -fno-stack-protector -nostartfiles
+LDFLAGS = -Tarch/$(ARCH)/kernel.ld -g -ffreestanding -fno-stack-protector -nostartfiles
 SOURCES = $(wildcard system/*.cpp \
 		     util/*.cpp \
 		     arch/$(ARCH)/uart/*.cpp \

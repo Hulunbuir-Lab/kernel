@@ -18,16 +18,15 @@ void System::InitMem(KernelInfo& info)
     for (u64 pt = efiMemMapStart; pt < efiMemMapEnd; pt += efiMemMapDescriptorSize) {
         aMem = (efiMemDescriptor *) pt;
         maxMem = kMax(maxMem, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT));
-        uPut << (void *) aMem->PhyStart << '\n';
         if (dynamicMemMapDespStart == 0 && aMem->PhyStart >= separator) {
             dynamicMemMapDespStart = pt;
         }
     }
 
     if (maxMem < 0xC0000000)
-        pageAllocator.SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT));
+        pageAllocator.SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT), separator);
     else
-        pageAllocator.SetPageInfo(0x90000000);
+        pageAllocator.SetPageInfo(0x90000000, separator);
 
     for (u64 pt = dynamicMemMapDespStart; pt < efiMemMapEnd; pt += efiMemMapDescriptorSize) {
         aMem = (efiMemDescriptor *) pt;
@@ -38,13 +37,12 @@ void System::InitMem(KernelInfo& info)
             case EfiBootServicesData:
             case EfiConventionalMemory:
                 pageAllocator.AddArea(aMem->PhyStart, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1, 0);
-                uPut << aMem->PhyStart << ' ' << aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1 << ' ' << 0 << '\n';
-                break;
             default:
                 pageAllocator.AddArea(aMem->PhyStart, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1, 1);
-                uPut << aMem->PhyStart << ' ' << aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1 << ' ' << 1 << '\n';
         }
     }
+
+    pageAllocator.ListPage();
 }
 
 void System::Run() {

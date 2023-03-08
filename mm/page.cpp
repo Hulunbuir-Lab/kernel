@@ -2,10 +2,10 @@
 
 PageAllocator::PageAllocator(){}
 
-
-void PageAllocator::SetPageInfo(u64 pageInfoAddress)
+void PageAllocator::SetPageInfo(u64 pageInfoAddress, u64 pageAreaStart)
 {
     pageInfo = (Page *) pageInfoAddress;
+    this->pageAreaStart = pageAreaStart;
 }
 
 void PageAllocator::AddArea(u64 start, u64 end, bool isMaskedAsIllegal)
@@ -13,7 +13,6 @@ void PageAllocator::AddArea(u64 start, u64 end, bool isMaskedAsIllegal)
     u8 currentPageSizeBit = PAGE_GROUP_SIZE_BIT - 1;
     Page *t;
     for (u64 pt = start; pt <= end; pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
-        uPut << pt << '\n';
         while (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) - 1 > end) --currentPageSizeBit;
         t = AddrToPage(pt);
         setupPage(t, isMaskedAsIllegal ? PAGE_GROUP_SIZE_BIT : currentPageSizeBit);
@@ -75,4 +74,14 @@ void PageAllocator::FreePage(Page* t)
         }
     }
     addPageToBuddy(t);
+}
+
+void PageAllocator::ListPage() {
+    for (u8 i = 0; i < PAGE_GROUP_SIZE_BIT; ++i) {
+        u64 c = 0;
+        for (Page *t = buddyHeadList[i]; t != nullptr; t = t->Next) {
+            ++c;
+        }
+        uPut << "2 ^ " << i << " = " << c << '\n';
+    }
 }

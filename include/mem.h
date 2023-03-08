@@ -87,6 +87,7 @@ public:
 
 class PageAllocator {
     Page *pageInfo;
+    u64 pageAreaStart;
 	Page* buddyHeadList[PAGE_GROUP_SIZE_BIT];
 	Page* getBuddyPage(Page *t) {
       return (Page *)((u64)t ^ (1 << (t->SizeBit + PAGEINFO_SIZE_BIT)));
@@ -98,16 +99,17 @@ class PageAllocator {
     void deletePageFromBuddy(Page *t);
 public:
 	PageAllocator();
-    void SetPageInfo(u64 pageInfoAddress);
+    void SetPageInfo(u64 pageInfoAddress, u64 pageAreaStart);
 	void* PageToAddr(Page* t) {
-      return (void *)(((t - pageInfo) << (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT)) + (u64) pageInfo);
+      return (void *)(((t - pageInfo) << PAGE_SIZE_BIT) + (u64) pageAreaStart);
     }
 	Page* AddrToPage(u64 t) {
-      return pageInfo + ((t - (u64) pageInfo) >> (PAGE_GROUP_SIZE_BIT + PAGEINFO_SIZE_BIT));
+      return pageInfo + ((t - pageAreaStart) >> PAGE_SIZE_BIT);
     }
 	Page* AllocPage(u8 sizeBit);
 	void FreePage(Page* t);
     void AddArea(u64 start, u64 end, bool isMaskedAsIllegal);
+    void ListPage();
 };
 
 #endif

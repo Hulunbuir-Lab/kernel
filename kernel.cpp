@@ -1,5 +1,7 @@
 #include <system.h>
 
+static System os;
+
 void invokeInit() {
     using func_ptr = void (*) (void);
     extern char __init_array_start, __init_array_end;
@@ -10,7 +12,6 @@ void invokeInit() {
 
 extern "C" void KernelMain(KernelInfo info) {
     invokeInit();
-    System os;
     os.InitMem(info);
     os.Run();
 }
