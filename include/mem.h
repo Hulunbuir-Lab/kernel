@@ -50,6 +50,17 @@ struct Page {
     u64 SizeBit;
 };
 
+class MMU {
+    void *pageTable;
+public:
+    void setPageTable(void* addr) {
+        pageTable = addr;
+    }
+    void AddItem(u64 vaddr, u64 paddr);
+    void DeleteItem(u64 vaddr);
+    u64 V2P(u64 vaddr);
+};
+
 class MemSpace;
 
 class Zone {
@@ -68,19 +79,19 @@ class MemSpace {
 public:
 	u64 VStart;
 	u64 VEnd;
-	u64* PageTable;
+	MMU MMUService;
 	Zone *Root;
     MemSpace(u64 vStart, u64 vEnd);
     bool AddZone(Zone *t);
     bool DeleteZone(Zone *t);
 };
 
-class DirectZone : Zone {
+class DirectZone : public Zone {
 public:
     DirectZone(u64 start, u64 end): Zone(start, end){}
 };
 
-class DynamicZone : Zone {
+class DynamicZone : public Zone {
 public:
     DynamicZone(u64 start, u64 end): Zone(start, end){}
 };
@@ -100,25 +111,19 @@ class PageAllocator {
 public:
 	PageAllocator();
     void SetPageInfo(u64 pageInfoAddress, u64 pageAreaStart);
-	void* PageToAddr(Page* t) {
-      return (void *)(((t - pageInfo) << PAGE_SIZE_BIT) + (u64) pageAreaStart);
+	u64 PageToAddr(Page* t) {
+      return (((t - pageInfo) << PAGE_SIZE_BIT) + (u64) pageAreaStart);
     }
 	Page* AddrToPage(u64 t) {
       return pageInfo + ((t - pageAreaStart) >> PAGE_SIZE_BIT);
     }
 	Page* AllocPage(u8 sizeBit);
+    void* AllocMem(u8 sizeBit) {
+        return (void*) PageToAddr(AllocPage(sizeBit));
+    }
 	void FreePage(Page* t);
     void AddArea(u64 start, u64 end, bool isMaskedAsIllegal);
     void ListPage();
-};
-
-class MMU {
-public:
-    MMU(u64 address);
-    void AddItem(u64 vaddr, u64 paddr);
-    void DeleteItem(u64 vaddr);
-    u64 V2P(u64 vaddr);
-    u64 P2V(u64 paddr);
 };
 
 extern void* KernelEnd;
@@ -128,6 +133,7 @@ extern const u64 vaddrEnd;
 extern PageAllocator pageAllocator;
 extern MemSpace kernelSpace;
 extern DirectZone kernelDirectZone;
+extern DynamicZone kernelDynamicZone;
 extern MemSpace* currentMemSpace;
 
 #endif

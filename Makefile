@@ -5,6 +5,7 @@ LDFLAGS = -Tarch/$(ARCH)/kernel.ld -g -ffreestanding -fno-stack-protector -nosta
 SOURCES = $(wildcard system/*.cpp \
 		     util/*.cpp \
 		     arch/$(ARCH)/uart/*.cpp \
+		     arch/$(ARCH)/mem/*.cpp \
 		     mem/*.cpp \
 		     kernel.cpp \
 	   )

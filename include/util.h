@@ -11,23 +11,19 @@ void kSwap(T & a, T & b);
 
 u32 kStrlen(const char* s);
 
-inline u64 kCsrrd(u16 csrNum) {
-    u64 value;
-    __asm__ volatile (
-        "csrrd %0, %1"
-        : "=r"(value)
-        : "i"(csrNum)
-    );
-    return value;
-}
+#define kCsrrd(val, csr) \
+__asm__( \
+    "csrrd %0, %1" \
+    :"=r"(val) \
+    :"i"(csr) \
+)
 
-inline void kCsrwr(u64 value, u16 csrNum) {
-    __asm__ volatile (
-        "csrwr %0, %1"
-        :
-        : "r"(value), "i"(csrNum)
-    );
-}
+#define kCsrwr(val, csr) \
+__asm__( \
+    "csrwr %0, %1" \
+    : \
+    :"r"(val), "i"(csr) \
+)
 
 template <class T>
 inline T kMax(T a, T b) {

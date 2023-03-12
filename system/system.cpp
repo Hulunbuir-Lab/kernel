@@ -40,6 +40,20 @@ void System::InitPage()
     }
 }
 
+void System::InitMem()
+{
+    int pgc = 0x13E4D52C;
+    kCsrwr(pgc, 0x1C);
+    pgc = 0x267;
+    kCsrwr(pgc, 0x1D);
+
+    kernelSpace.MMUService.setPageTable(pageAllocator.AllocMem(0));
+    kernelSpace.AddZone(&kernelDirectZone);
+    kernelSpace.AddZone(&kernelDynamicZone);
+
+}
+
+
 void System::Init()
 {
     InitPage();

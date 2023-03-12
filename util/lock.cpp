@@ -3,9 +3,9 @@
 void Mutex::Lock() {
     u32 t = 1;
     while (t) {
-        __asm__ (
+        __asm__(
             "amswap.w %0, %1, %2"
-            :"=r"(t)
+            :"+r"(t)
             :"r"(1), "r"(&locked)
         );
     }
