@@ -3,6 +3,7 @@
 
 #include <util.h>
 #include <uart.h>
+#include <tree.h>
 
 #define PAGE_GROUP_SIZE_BIT 12
 #define PAGE_SIZE_BIT 12
@@ -69,9 +70,7 @@ public:
 	virtual void OnPageFault(u64 vaddr);
 	u64 VStart;
 	u64 VEnd;
-	Zone *Left;
-	Zone *Right;
-    MemSpace *Fa;
+    MemSpace *space;
     u8 Attr;
 };
 
@@ -80,10 +79,10 @@ public:
 	u64 VStart;
 	u64 VEnd;
 	MMU MMUService;
-	Zone *Root;
+	Tree<Zone> *Root;
     MemSpace(u64 vStart, u64 vEnd);
-    bool AddZone(Zone *t);
-    bool DeleteZone(Zone *t);
+    void AddZone(Zone *t);
+    void DeleteZone(Zone *t);
 };
 
 class DirectZone : public Zone {
