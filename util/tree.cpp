@@ -30,7 +30,7 @@ void Tree< TVal >::splay(TNode< TVal >* t, TNode< TVal >* p)
 }
 
 template <typename TVal>
-TNode<TVal> * Tree<TVal>::find(u8 (*check)(TVal *))
+TNode<TVal> * Tree<TVal>::find(std::function<u8 (TVal *)> check)
 {
 	TNode<TVal> *pt = root;
 	while (pt != nullptr) {
@@ -49,7 +49,7 @@ TNode<TVal> * Tree<TVal>::find(u8 (*check)(TVal *))
 }
 
 template<typename TVal>
-void Tree<TVal>::insert(TNode<TVal>* node, bool (*check)(TVal *))
+void Tree<TVal>::insert(TNode<TVal>* node, std::function<bool (TVal *)> check)
 {
 	TNode<TVal> *pt = root, *f;
 	bool k;

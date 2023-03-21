@@ -10,13 +10,6 @@
 #define PAGE_SIZE (1 << PAGE_SIZE_BIT)
 #define PAGEINFO_SIZE_BIT 5
 
-struct KernelInfo {
-  void *XdspAddress;
-  void *MemMapAddress;
-  u64 MemMapSize;
-  u64 MemMapDescriptorSize;
-};
-
 enum efiMemType: u64{
   EfiReservedMemoryType,
   EfiLoaderCode,
@@ -42,6 +35,13 @@ struct efiMemDescriptor {
     u64 VirtStart;
     u64 PageNum;
     u64 Attr;
+};
+
+struct KernelInfo {
+  void *XdspAddress;
+  void *MemMapAddress;
+  u64 MemMapSize;
+  u64 MemMapDescriptorSize;
 };
 
 struct Page {
@@ -87,7 +87,9 @@ public:
 
 class DirectZone : public Zone {
 public:
-    DirectZone(u64 start, u64 end): Zone(start, end){}
+    u64 Offset;
+    DirectZone(u64 vstart, u64 vend, u64 offset): Zone(vstart, vend), Offset(offset){}
+    virtual void OnPageFault(u64 vaddr) override;
 };
 
 class DynamicZone : public Zone {
@@ -131,8 +133,8 @@ extern const u64 vaddrEnd;
 
 extern PageAllocator pageAllocator;
 extern MemSpace kernelSpace;
-extern DirectZone kernelDirectZone;
-extern DynamicZone kernelDynamicZone;
+extern TNode<Zone> kernelDirectZone;
+extern TNode<Zone> kernelDynamicZone;
 extern MemSpace* currentMemSpace;
 
 #endif
