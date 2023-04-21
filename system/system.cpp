@@ -1,43 +1,12 @@
 #include <system.h>
 
-System::System(KernelInfo& info) {
-    acpiBase = info.XdspAddress;
-    efiMemMapStart = (u64) info.MemMapAddress;
-    efiMemMapEnd = (u64) info.MemMapAddress + info.MemMapSize;
-    efiMemMapDescriptorSize = info.MemMapDescriptorSize;
-}
-
 void System::InitPage()
 {
-    efiMemDescriptor *aMem;
-    u64 maxMem = 0, dynamicMemMapDespStart = 0;
+    pageAllocator.SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT), separator);
 
-    for (u64 pt = efiMemMapStart; pt < efiMemMapEnd; pt += efiMemMapDescriptorSize) {
-        aMem = (efiMemDescriptor *) pt;
-        maxMem = kMax(maxMem, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT));
-        if (dynamicMemMapDespStart == 0 && aMem->PhyStart >= separator) {
-            dynamicMemMapDespStart = pt;
-        }
-    }
-
-    if (maxMem < 0xC0000000)
-        pageAllocator.SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT), separator);
-    else
-        pageAllocator.SetPageInfo(0x90000000, separator);
-
-    for (u64 pt = dynamicMemMapDespStart; pt < efiMemMapEnd; pt += efiMemMapDescriptorSize) {
-        aMem = (efiMemDescriptor *) pt;
-        switch (aMem->Type) {
-            case EfiLoaderCode:
-            case EfiLoaderData:
-            case EfiBootServicesCode:
-            case EfiBootServicesData:
-            case EfiConventionalMemory:
-                pageAllocator.AddArea(aMem->PhyStart, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1, 0);
-            default:
-                pageAllocator.AddArea(aMem->PhyStart, aMem->PhyStart + (aMem->PageNum << PAGE_SIZE_BIT) - 1, 1);
-        }
-    }
+    pageAllocator.AddArea(separator, 0xFFFFFFF, 0);
+    pageAllocator.AddArea(0x10000000, 0x7FFFFFFF, 1);
+    pageAllocator.AddArea(0x80000000, 0xFFFFFFFF, 0);
 }
 
 void System::InitMem()
@@ -50,7 +19,6 @@ void System::InitMem()
     kernelSpace.MMUService.setPageTable(pageAllocator.AllocMem(0));
     kernelSpace.AddZone(&kernelDirectZone);
     kernelSpace.AddZone(&kernelDynamicZone);
-
 }
 
 

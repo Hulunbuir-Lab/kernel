@@ -81,7 +81,7 @@ public:
 	MMU MMUService;
 	Tree<Zone> *Root;
     MemSpace(u64 vStart, u64 vEnd);
-    void AddZone(Zone *t);
+    void AddZone(TNode<Zone> *t);
     void DeleteZone(Zone *t);
 };
 

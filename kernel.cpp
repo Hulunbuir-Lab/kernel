@@ -8,9 +8,10 @@ void invokeInit() {
     }
 }
 
-extern "C" void KernelMain(KernelInfo info) {
+extern "C" void KernelMain() {
     invokeInit();
-    System os(info);
+    System os;
+    uPut<<"Hello World!";
     os.Init();
     os.Run();
 }

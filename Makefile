@@ -2,18 +2,20 @@
 
 CXXFLAGS = -march=$(ARCH) -mabi=$(ABI) -g -ffreestanding -fno-stack-protector -nostartfiles -Iinclude
 LDFLAGS = -Tarch/$(ARCH)/kernel.ld -g -ffreestanding -fno-stack-protector -nostartfiles
-SOURCES = $(wildcard system/*.cpp \
+SOURCES = $(wildcard kernel.cpp \
+		     system/*.cpp \
 		     util/*.cpp \
 		     arch/$(ARCH)/uart/*.cpp \
 		     arch/$(ARCH)/mem/*.cpp \
+		     arch/$(ARCH)/util/*.cpp \
 		     mem/*.cpp \
-		     kernel.cpp \
 	   )
 
-OBJS = $(SOURCES:%.cpp=%.o) arch/$(ARCH)/loader.o
+OBJS = arch/$(ARCH)/loader.o $(SOURCES:%.cpp=%.o)
 
 kernel: $(OBJS)
-	$(CXX) $^ -o kernel $(LDFLAGS)
+	$(CXX) $^ -o kernel.elf $(LDFLAGS)
+	$(OBJCOPY) kernel.elf -O binary kernel
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

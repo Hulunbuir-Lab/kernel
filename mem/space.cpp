@@ -18,16 +18,16 @@ void DirectZone::OnPageFault(u64 vaddr)
 
 MemSpace::MemSpace(u64 vStart, u64 vEnd) :VStart(vStart), VEnd(vEnd) {}
 
-void MemSpace::AddZone(Zone* t)
+void MemSpace::AddZone(TNode<Zone>* t)
 {
-    t->space = this;
+    t->val.space = this;
     if (Root->find([t](Zone *ct)->u8{
-        if (t->VEnd < ct->VStart) return 1;
-        else if (t->VStart > ct->VEnd) return -1;
-        else return 0;
+        if (t->val.VEnd < ct->VStart) return 2;
+        else if (t->val.VStart > ct->VEnd) return 0;
+        else return 1;
     }) == nullptr) {
         Root->insert(&kernelDirectZone, [t](Zone *ct)->bool{
-            if (ct->VStart > t->VEnd) return 0;
+            if (ct->VStart > t->val.VEnd) return 0;
             else return 1;
         });
     }

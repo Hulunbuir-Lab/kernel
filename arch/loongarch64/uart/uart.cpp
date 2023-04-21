@@ -1,6 +1,6 @@
 #include <uart.h>
 
-UART uPut((u8 *)0x1fe001e0);
+UART uPut((u8 *)0x1FF40800);
 
 UART::UART(u8 *addr) :baseAddress(addr){
     // disable interrupts
@@ -8,9 +8,9 @@ UART::UART(u8 *addr) :baseAddress(addr){
     // special mode to set baud rate
     *(baseAddress + 3) = 0x80;
     // LSB for baud rate of 38.4K
-    *baseAddress = 0x03;
+    *baseAddress = 0x1B;
     // MSB for baud rate of 38.4K
-    *(baseAddress + 1) = 0;
+    *(baseAddress + 1) = 0x0;
     // leave set-baud mode and set word length
     // to 8 bits, no parity
     *(baseAddress + 3) = 0x03;
