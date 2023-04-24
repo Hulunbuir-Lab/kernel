@@ -1,6 +1,6 @@
 #include <uart.h>
 
-UART uPut((u8 *)0x1FF40800);
+UART uPut((u8 *)(0x1ff40800llu));
 
 UART::UART(u8 *addr) :baseAddress(addr){
     // disable interrupts

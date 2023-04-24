@@ -26,3 +26,4 @@ kernel: $(OBJS)
 clean:
 	find . -name \*.o -exec rm {} \;
 	if [ -f kernel ]; then rm kernel; fi
+	if [ -f kernel.elf ]; then rm kernel.elf; fi

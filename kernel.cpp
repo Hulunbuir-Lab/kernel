@@ -11,7 +11,6 @@ void invokeInit() {
 extern "C" void KernelMain() {
     invokeInit();
     System os;
-    uPut<<"Hello World!";
     os.Init();
     os.Run();
 }

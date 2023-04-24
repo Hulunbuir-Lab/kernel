@@ -7,7 +7,7 @@ _start:
 	csrwr	$t0, 0x180
 	csrwr	$zero, 0x182
 	csrwr	$zero, 0x183
-	li.d	$t0, 0x4
+	li.d	$t0, 0x8
 	csrwr	$t0, 0x0
 	la.local	$t1, KernelMain
 	li.d	$t0, 0xFFFFFFF

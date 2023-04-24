@@ -10,40 +10,6 @@
 #define PAGE_SIZE (1 << PAGE_SIZE_BIT)
 #define PAGEINFO_SIZE_BIT 5
 
-enum efiMemType: u64{
-  EfiReservedMemoryType,
-  EfiLoaderCode,
-  EfiLoaderData,
-  EfiBootServicesCode,
-  EfiBootServicesData,
-  EfiRuntimeServicesCode,
-  EfiRuntimeServicesData,
-  EfiConventionalMemory,
-  EfiUnusableMemory,
-  EfiACPIReclaimMemory,
-  EfiACPIMemoryNVS,
-  EfiMemoryMappedIO,
-  EfiMemoryMappedIOPortSpace,
-  EfiPalCode,
-  EfiPersistentMemory,
-  EfiMaxMemoryType
-};
-
-struct efiMemDescriptor {
-    efiMemType Type;
-    u64 PhyStart;
-    u64 VirtStart;
-    u64 PageNum;
-    u64 Attr;
-};
-
-struct KernelInfo {
-  void *XdspAddress;
-  void *MemMapAddress;
-  u64 MemMapSize;
-  u64 MemMapDescriptorSize;
-};
-
 struct Page {
 	Page *Prev;
 	Page *Next;
