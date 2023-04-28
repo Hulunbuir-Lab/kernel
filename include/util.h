@@ -11,10 +11,6 @@ void kSwap(T & a, T & b);
 
 u32 kStrlen(const char* s);
 
-u64 kCsrrd(u8 csr);
-
-void kCsrwr(u64 val, u8 csr);
-
 template <class T>
 inline T kMax(T a, T b) {
     return a > b ? a : b;

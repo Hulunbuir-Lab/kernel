@@ -11,10 +11,8 @@ void System::InitPage()
 
 void System::InitMem()
 {
-    int pgc = 0x13E4D52C;
-    kCsrwr(pgc, 0x1C);
-    pgc = 0x267;
-    kCsrwr(pgc, 0x1D);
+    __csrwr_d(0x13E4D52C, 0x1C);
+    __csrwr_d(0x267, 0x1D);
 
     kernelSpace.MMUService.setPageTable(pageAllocator.AllocMem(0));
     kernelSpace.AddZone(&kernelDirectZone);
@@ -24,8 +22,11 @@ void System::InitMem()
 
 void System::Init()
 {
+    SysException.IntOff();
     InitPage();
     InitMem();
+    SysException.IntOn();
+    SysClock.ClockOn();
 }
 
 void System::Run() {

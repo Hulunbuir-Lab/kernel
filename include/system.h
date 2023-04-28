@@ -4,6 +4,9 @@
 #include <uart.h>
 #include <mem.h>
 #include <util.h>
+#include <exception.h>
+#include <larchintrin.h>
+#include <clock.h>
 
 class System {
     void InitPage();
