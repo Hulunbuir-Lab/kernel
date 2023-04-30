@@ -93,6 +93,63 @@ public:
     void ListPage();
 };
 
+struct SlabNode {
+    void* Start;
+    u16 Size;
+    SlabNode *Next;
+};
+
+class SlabZone {
+protected:
+    void* pageMem;
+public:
+    virtual void* Malloc(u16 size) = 0;
+    virtual bool Free(void* addr) = 0;
+    SlabZone *Next;
+};
+
+class SlabNodeZone: public SlabZone {
+    u8 bitMap[28];
+    bool used;
+public:
+    SlabNodeZone();
+    void* Malloc(u16 size);
+    bool Free(void* addr);
+};
+
+class DefaultSlabZone: public SlabZone{
+    SlabNode *availableMem;
+    SlabNode *usedMem;
+    bool used;
+public:
+    DefaultSlabZone();
+    void* Malloc(u16 size);
+    bool Free(void* addr);
+};
+
+class SlabNodeAllocator {
+    SlabNodeZone *slabNodeZonePtr;
+    u64 zoneNum;
+    u64 nodeNum;
+public:
+    SlabNodeAllocator();
+    SlabNode* AllocNode();
+    void FreeNode(SlabNode *node);
+};
+
+class DefaultSlabAllocator {
+    DefaultSlabZone *defaultSlabZonePtr;
+public:
+    DefaultSlabAllocator();
+    void* Malloc(u16 size);
+    void Free(void* addr);
+};
+
+inline void *operator new(u64, void *p) noexcept { return p; }
+inline void *operator new[](u64, void *p) noexcept { return p; }
+inline void  operator delete  (void *, void *) noexcept{ };
+inline void  operator delete[](void *, void *) noexcept { };
+
 extern void* KernelEnd;
 extern const u64 separator;
 extern const u64 vaddrEnd;

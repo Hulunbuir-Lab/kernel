@@ -1,7 +1,7 @@
 #include <clock.h>
 
 Clock::Clock() {
-    __csrwr_d(0x1100010, 0x41);
+    __csrwr_d(0x10010, 0x41);
 }
 
 void Clock::ClockOff(){
