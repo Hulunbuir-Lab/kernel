@@ -63,13 +63,13 @@ TNode<TVal> * Tree<TVal>::find(std::function<u8 (TVal *)> check)
 	TNode<TVal> *pt = root;
 	while (pt != nullptr) {
 		switch (check(&pt->val)){
-			case -1:
+			case 0:
 				pt = pt->child[0];
 				break;
-			case 0:
+			case 1:
 				return pt;
 				break;
-			case 1:
+			case 2:
 				pt = pt->child[1];
 		}
 	}

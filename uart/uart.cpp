@@ -1,7 +1,5 @@
 #include <uart.h>
 
-UART uPut((u8 *)(0x1ff40800llu));
-
 UART::UART(u8 *addr) :baseAddress(addr){
     // disable interrupts
     *(baseAddress + 1) = 0;
@@ -21,9 +19,8 @@ UART::UART(u8 *addr) :baseAddress(addr){
 }
 
 void UART::UARTPutchar(char c) {
-
     // wait for Transmit Holding Empty to be set in LSR
-    while((*(baseAddress + 5) & (1 << 5)) == 0);
+    while((*(baseAddress + 5) & (1 << 5)) == 0) {}
     *baseAddress = c;
 }
 

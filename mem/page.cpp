@@ -1,6 +1,12 @@
 #include <mem.h>
 
-PageAllocator::PageAllocator(){}
+PageAllocator::PageAllocator(){
+    SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT), PageAreaStart);
+
+    AddArea(PageAreaStart, 0xFFFFFFF, 0);
+    AddArea(0x10000000, 0x7FFFFFFF, 1);
+    AddArea(0x80000000, 0xFFFFFFFF, 0);
+}
 
 void PageAllocator::SetPageInfo(u64 pageInfoAddress, u64 pageAreaStart)
 {
@@ -40,19 +46,18 @@ void PageAllocator::deletePageFromBuddy(Page* t)
 Page* PageAllocator::AllocPage(u8 sizeBit) {
     Page *p = nullptr;
     for (u8 i = sizeBit; i < PAGE_GROUP_SIZE_BIT; ++i) {
-        if (buddyHeadList[sizeBit] != nullptr) {
-            p = buddyHeadList[sizeBit];
+        if (buddyHeadList[i] != nullptr) {
+            p = buddyHeadList[i];
             break;
         }
     }
     deletePageFromBuddy(p);
     Page *buddy;
-    if (p -> SizeBit != sizeBit) {
-        for (; p->SizeBit > sizeBit; --p->SizeBit) {
-            buddy = getBuddyPage(p);
-            setupPage(buddy, p->SizeBit - 1);
-            addPageToBuddy(buddy);
-        }
+    while (p->SizeBit > sizeBit) {
+        --p->SizeBit;
+        buddy = getBuddyPage(p);
+        setupPage(buddy, p->SizeBit);
+        addPageToBuddy(buddy);
     }
     ++p->RefCount;
     return p;

@@ -85,8 +85,9 @@ public:
       return pageInfo + ((t - pageAreaStart) >> PAGE_SIZE_BIT);
     }
 	Page* AllocPage(u8 sizeBit);
-    void* AllocMem(u8 sizeBit) {
-        return (void*) PageToAddr(AllocPage(sizeBit));
+    void* AllocPageMem(u8 sizeBit) {
+        Page * t = AllocPage(sizeBit);
+        return (void*) PageToAddr(t);
     }
 	void FreePage(Page* t);
     void AddArea(u64 start, u64 end, bool isMaskedAsIllegal);
@@ -103,6 +104,7 @@ class SlabZone {
 protected:
     void* pageMem;
 public:
+    SlabZone();
     virtual void* Malloc(u16 size) = 0;
     virtual bool Free(void* addr) = 0;
     SlabZone *Next;
@@ -120,6 +122,7 @@ public:
 class DefaultSlabZone: public SlabZone{
     SlabNode *availableMem;
     SlabNode *usedMem;
+    friend class DefaultSlabAllocator;
     bool used;
 public:
     DefaultSlabZone();
@@ -143,15 +146,11 @@ public:
     DefaultSlabAllocator();
     void* Malloc(u16 size);
     void Free(void* addr);
+    void ListZone();
 };
 
-inline void *operator new(u64, void *p) noexcept { return p; }
-inline void *operator new[](u64, void *p) noexcept { return p; }
-inline void  operator delete  (void *, void *) noexcept{ };
-inline void  operator delete[](void *, void *) noexcept { };
-
 extern void* KernelEnd;
-extern const u64 separator;
+extern const u64 PageAreaStart;
 extern const u64 vaddrEnd;
 
 extern PageAllocator pageAllocator;
@@ -159,5 +158,10 @@ extern MemSpace kernelSpace;
 extern TNode<Zone> kernelDirectZone;
 extern TNode<Zone> kernelDynamicZone;
 extern MemSpace* currentMemSpace;
+
+extern SlabNodeZone slabNodeZone;
+extern SlabNodeAllocator slabNodeAllocator;
+extern DefaultSlabZone defaultSlabZone;
+extern DefaultSlabAllocator defaultSlabAllocator;
 
 #endif

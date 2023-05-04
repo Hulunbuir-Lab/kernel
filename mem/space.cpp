@@ -1,14 +1,8 @@
 #include <mem.h>
 
-PageAllocator pageAllocator;
-MemSpace kernelSpace(0, vaddrEnd);
-TNode<Zone> kernelDirectZone(DirectZone(0, separator - 1, 0));
-TNode<Zone> kernelDynamicZone(DynamicZone(separator, vaddrEnd));
-MemSpace *currentMemSpace;
-
 void Zone::OnPageFault(u64 vaddr)
 {
-    space->MMUService.AddItem(vaddr, (u64) pageAllocator.AllocMem(0));
+    space->MMUService.AddItem(vaddr, (u64) pageAllocator.AllocPageMem(0));
 }
 
 void DirectZone::OnPageFault(u64 vaddr)

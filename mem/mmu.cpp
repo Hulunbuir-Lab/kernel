@@ -20,17 +20,17 @@ void MMU::AddItem(u64 vaddr, u64 paddr)
 {
     PTE* p1 = (PTE*) pageTable + getPartical(vaddr, 47, 39);
     if (p1->pa == 0) {
-        p1->pa = (u64) pageAllocator.AllocMem(0) >> 12;
+        p1->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p2 = (PTE*) (p1->pa << 12) + getPartical(vaddr, 38, 30);
     if (p2->pa == 0) {
-        p2->pa = (u64) pageAllocator.AllocMem(0) >> 12;
+        p2->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
     if (p2->pa == 0) {
-        p2->pa = (u64) pageAllocator.AllocMem(0) >> 12;
+        p2->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p4 = (PTE*) (p3->pa << 12) + getPartical(vaddr, 20, 12);

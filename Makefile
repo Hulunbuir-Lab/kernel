@@ -3,10 +3,13 @@
 CXXFLAGS = -march=loongarch64 -mabi=lp64d -g -ffreestanding -fno-stack-protector -nostartfiles -Iinclude -fno-rtti -fno-exceptions
 LDFLAGS = -Tkernel.ld -g -ffreestanding -fno-stack-protector -nostartfiles -fno-rtti -fno-exceptions
 SOURCES = $(wildcard kernel.cpp \
-		     system/*.cpp \
 		     util/*.cpp \
 		     uart/*.cpp \
-		     mem/*.cpp \
+		     mem/mmu.cpp \
+		     mem/page.cpp \
+		     mem/mem.cpp \
+		     mem/slab.cpp \
+		     mem/space.cpp \
 		     exception/*.cpp \
 		     clock/*.cpp \
 	   )
