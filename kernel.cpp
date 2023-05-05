@@ -45,6 +45,7 @@ extern "C" void KernelMain() {
     invokeInit();
     initMem();
     SysException.IntOn();
+    SysClock.ClockOn();
 
     while (1);
 }

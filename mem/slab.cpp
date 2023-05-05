@@ -15,13 +15,14 @@ void * DefaultSlabAllocator::Malloc(u16 size){
     return addr;
 }
 
-void DefaultSlabAllocator::Free(void* addr){
+bool DefaultSlabAllocator::Free(void* addr){
     DefaultSlabZone* zone = defaultSlabZonePtr;
     bool status = zone->Free(addr);
     while (status == false && zone->Next != nullptr) {
         zone = reinterpret_cast<DefaultSlabZone*>(zone->Next);
         status = zone->Free(addr);
     }
+    return status;
 }
 
 void DefaultSlabAllocator::ListZone()

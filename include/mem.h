@@ -90,6 +90,10 @@ public:
         return (void*) PageToAddr(t);
     }
 	void FreePage(Page* t);
+    void FreePageMem(void* addr) {
+        Page *t = AddrToPage((u64) addr);
+        FreePage(t);
+    }
     void AddArea(u64 start, u64 end, bool isMaskedAsIllegal);
     void ListPage();
 };
@@ -145,7 +149,7 @@ class DefaultSlabAllocator {
 public:
     DefaultSlabAllocator();
     void* Malloc(u16 size);
-    void Free(void* addr);
+    bool Free(void* addr);
     void ListZone();
 };
 
@@ -163,5 +167,21 @@ extern SlabNodeZone slabNodeZone;
 extern SlabNodeAllocator slabNodeAllocator;
 extern DefaultSlabZone defaultSlabZone;
 extern DefaultSlabAllocator defaultSlabAllocator;
+
+// void* operator new (std::size_t size, const std::nothrow_t& tag) noexcept {
+//     if (size < 4096) {
+//         return defaultSlabAllocator.Malloc(size);
+//     }
+//     u32 i = 4096 << 11, j = 11;
+//     if (size > i) return nullptr;
+//     for (; i > 4096; i >>= 1, --j) {
+//         if (i >= size && (i >> 1) < size) return pageAllocator.AllocPageMem(j);
+//     }
+//     return nullptr;
+// }
+//
+// void operator delete (void* ptr, const std::nothrow_t& tag) noexcept {
+//     defaultSlabAllocator.Free(ptr);
+// }
 
 #endif
