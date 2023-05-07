@@ -1,38 +1,35 @@
 
 #include <mem.h>
 
-DefaultSlabAllocator::DefaultSlabAllocator(){
+SlabAllocator::SlabAllocator(){
     defaultSlabZonePtr = &defaultSlabZone;
 }
 
-void * DefaultSlabAllocator::Malloc(u16 size){
-    DefaultSlabZone* zone = defaultSlabZonePtr;
+void * SlabAllocator::Malloc(u16 size){
+    SlabArea* zone = defaultSlabZonePtr;
     void *addr = zone->Malloc(size);
     while (addr == nullptr && zone->Next != nullptr) {
-        zone = reinterpret_cast<DefaultSlabZone*>(zone->Next);
+        zone = reinterpret_cast<SlabArea*>(zone->Next);
         addr = zone->Malloc(size);
     }
     return addr;
 }
 
-bool DefaultSlabAllocator::Free(void* addr){
-    DefaultSlabZone* zone = defaultSlabZonePtr;
+bool SlabAllocator::Free(void* addr){
+    SlabArea* zone = defaultSlabZonePtr;
     bool status = zone->Free(addr);
     while (status == false && zone->Next != nullptr) {
-        zone = reinterpret_cast<DefaultSlabZone*>(zone->Next);
+        zone = reinterpret_cast<SlabArea*>(zone->Next);
         status = zone->Free(addr);
     }
     return status;
 }
 
-void DefaultSlabAllocator::ListZone()
+void SlabAllocator::ListZone()
 {
-    for (DefaultSlabZone* zone = defaultSlabZonePtr; zone != nullptr; zone = reinterpret_cast<DefaultSlabZone*>(zone->Next)) {
-        uPut << zone->pageMem;
-        if (zone->used == false) {
-            uPut << ": Unused Slab Page\n";
-        } else {
-            uPut << ":\n";
+    for (SlabArea* zone = defaultSlabZonePtr; zone != nullptr; zone = reinterpret_cast<SlabArea*>(zone->Next)) {
+        if (zone->used == true) {
+            uPut << zone->pageMem << ":\n";
             if (zone->availableMem != nullptr) {
                 uPut << "Available SlabNode:\n";
                 for (SlabNode *pt = zone->availableMem; pt != nullptr; pt = pt->Next) {
@@ -49,14 +46,15 @@ void DefaultSlabAllocator::ListZone()
     }
 }
 
-DefaultSlabZone::DefaultSlabZone(): used(false){}
+SlabArea::SlabArea(): used(false){}
 
-void * DefaultSlabZone::Malloc(u16 size) {
+void * SlabArea::Malloc(u16 size) {
     if (used == false) {
-        Next = new ((void*) pageMem) DefaultSlabZone;
+        pageMem = pageAllocator.AllocPageMem(0);
+        Next = new ((void*) pageMem) SlabArea;
         availableMem = slabNodeAllocator.AllocNode();
-        availableMem->Start = (DefaultSlabZone*) pageMem + 1;
-        availableMem->Size = 4096 - sizeof(DefaultSlabZone);
+        availableMem->Start = (SlabArea*) pageMem + 1;
+        availableMem->Size = 4096 - sizeof(SlabArea);
         used = true;
     }
     SlabNode *nodePtr = availableMem;
@@ -87,7 +85,7 @@ void * DefaultSlabZone::Malloc(u16 size) {
     return nullptr;
 }
 
-bool DefaultSlabZone::Free(void* addr){
+bool SlabArea::Free(void* addr){
     if (((u64) addr & 0xFFFFFFFFFFFFF000) != (u64) pageMem) return false;
     SlabNode *node = usedMem;
     SlabNode *p = nullptr;
@@ -113,33 +111,34 @@ SlabNodeAllocator::SlabNodeAllocator(): zoneNum(1), nodeNum(0){
 }
 
 SlabNode * SlabNodeAllocator::AllocNode() {
-    SlabNodeZone* zone = slabNodeZonePtr;
+    SlabNodeArea* zone = slabNodeZonePtr;
     void* node = zone->Malloc(sizeof(SlabNode));
     while (node == nullptr && zone->Next != nullptr) {
-        zone = reinterpret_cast<SlabNodeZone*>(zone->Next);
+        zone = reinterpret_cast<SlabNodeArea*>(zone->Next);
         node = zone->Malloc(sizeof(SlabNode));
     }
     return (SlabNode*) node;
 }
 
 void SlabNodeAllocator::FreeNode(SlabNode* node) {
-    SlabNodeZone* zone = slabNodeZonePtr;
+    SlabNodeArea* zone = slabNodeZonePtr;
     bool status = zone->Free(node);
     while (status == false && zone->Next != nullptr) {
-        zone = reinterpret_cast<SlabNodeZone*>(zone->Next);
+        zone = reinterpret_cast<SlabNodeArea*>(zone->Next);
         status = zone->Free(node);
     }
 }
 
-SlabNodeZone::SlabNodeZone(): used(false){
+SlabNodeArea::SlabNodeArea(): used(false){
     pageMem = pageAllocator.AllocPageMem(0);
     for (u8 i = 0; i < 28; ++i) bitMap[i] = 0;
 }
 
-void * SlabNodeZone::Malloc(u16 size) {
+void * SlabNodeArea::Malloc(u16 size) {
     if (size != sizeof(SlabNode)) return nullptr;
     if (used == false) {
-        Next = new ((void*) ((u64) pageMem + 4032)) SlabNodeZone;
+        pageMem = pageAllocator.AllocPageMem(0);
+        Next = new ((void*) ((u64) pageMem + 4032)) SlabNodeArea;
         used = true;
     }
     for (u8 i = 0; i < 28; ++i) {
@@ -154,7 +153,7 @@ void * SlabNodeZone::Malloc(u16 size) {
 }
 
 
-bool SlabNodeZone::Free(void* addr) {
+bool SlabNodeArea::Free(void* addr) {
     if (((u64) addr & 0xFFFFFFFFFFFFF000) != (u64) pageMem) return false;
     u16 t = (u64) addr / sizeof(SlabNode);
     u8 i = t / 8;
@@ -164,9 +163,4 @@ bool SlabNodeZone::Free(void* addr) {
         return true;
     }
     return false;
-}
-
-SlabZone::SlabZone()
-{
-    pageMem = pageAllocator.AllocPageMem(0);
 }

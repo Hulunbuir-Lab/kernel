@@ -13,15 +13,14 @@ UART uPut((u8 *)(0x1ff40800llu));
 PageAllocator pageAllocator;
 
 MemSpace kernelSpace(0, vaddrEnd);
-TNode<Zone> kernelDirectZone(DirectZone(0, PageAreaStart - 1, 0));
-TNode<Zone> kernelDynamicZone(DynamicZone(PageAreaStart, vaddrEnd));
+TNode<Zone> kernelDirectZone(DirectZone(0, 0xFFFFFFFF, 0));
 
 MemSpace *currentMemSpace;
 
-SlabNodeZone slabNodeZone;
+SlabNodeArea slabNodeZone;
 SlabNodeAllocator slabNodeAllocator;
-DefaultSlabZone defaultSlabZone;
-DefaultSlabAllocator defaultSlabAllocator;
+SlabArea defaultSlabZone;
+SlabAllocator defaultSlabAllocator;
 
 void invokeInit() {
     using func_ptr = void (*) (void);
@@ -38,7 +37,6 @@ void initMem()
 
     kernelSpace.MMUService.setPageTable(pageAllocator.AllocPageMem(0));
     kernelSpace.AddZone(&kernelDirectZone);
-    kernelSpace.AddZone(&kernelDynamicZone);
 }
 
 extern "C" void KernelMain() {

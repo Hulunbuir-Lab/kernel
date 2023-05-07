@@ -5,11 +5,7 @@ LDFLAGS = -Tkernel.ld -g -ffreestanding -fno-stack-protector -nostartfiles -fno-
 SOURCES = $(wildcard kernel.cpp \
 		     util/*.cpp \
 		     uart/*.cpp \
-		     mem/mmu.cpp \
-		     mem/page.cpp \
-		     mem/mem.cpp \
-		     mem/slab.cpp \
-		     mem/space.cpp \
+		     mem/*.cpp \
 		     exception/*.cpp \
 		     clock/*.cpp \
 	   )

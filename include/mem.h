@@ -58,11 +58,6 @@ public:
     virtual void OnPageFault(u64 vaddr) override;
 };
 
-class DynamicZone : public Zone {
-public:
-    DynamicZone(u64 start, u64 end): Zone(start, end){}
-};
-
 class PageAllocator {
     Page *pageInfo;
     u64 pageAreaStart;
@@ -104,38 +99,37 @@ struct SlabNode {
     SlabNode *Next;
 };
 
-class SlabZone {
+class Slab {
 protected:
     void* pageMem;
 public:
-    SlabZone();
     virtual void* Malloc(u16 size) = 0;
     virtual bool Free(void* addr) = 0;
-    SlabZone *Next;
+    Slab *Next;
 };
 
-class SlabNodeZone: public SlabZone {
+class SlabNodeArea: public Slab {
     u8 bitMap[28];
     bool used;
 public:
-    SlabNodeZone();
+    SlabNodeArea();
     void* Malloc(u16 size);
     bool Free(void* addr);
 };
 
-class DefaultSlabZone: public SlabZone{
+class SlabArea: public Slab{
     SlabNode *availableMem;
     SlabNode *usedMem;
-    friend class DefaultSlabAllocator;
+    friend class SlabAllocator;
     bool used;
 public:
-    DefaultSlabZone();
+    SlabArea();
     void* Malloc(u16 size);
     bool Free(void* addr);
 };
 
 class SlabNodeAllocator {
-    SlabNodeZone *slabNodeZonePtr;
+    SlabNodeArea *slabNodeZonePtr;
     u64 zoneNum;
     u64 nodeNum;
 public:
@@ -144,10 +138,10 @@ public:
     void FreeNode(SlabNode *node);
 };
 
-class DefaultSlabAllocator {
-    DefaultSlabZone *defaultSlabZonePtr;
+class SlabAllocator {
+    SlabArea *defaultSlabZonePtr;
 public:
-    DefaultSlabAllocator();
+    SlabAllocator();
     void* Malloc(u16 size);
     bool Free(void* addr);
     void ListZone();
@@ -160,28 +154,11 @@ extern const u64 vaddrEnd;
 extern PageAllocator pageAllocator;
 extern MemSpace kernelSpace;
 extern TNode<Zone> kernelDirectZone;
-extern TNode<Zone> kernelDynamicZone;
 extern MemSpace* currentMemSpace;
 
-extern SlabNodeZone slabNodeZone;
+extern SlabNodeArea slabNodeZone;
 extern SlabNodeAllocator slabNodeAllocator;
-extern DefaultSlabZone defaultSlabZone;
-extern DefaultSlabAllocator defaultSlabAllocator;
-
-// void* operator new (std::size_t size, const std::nothrow_t& tag) noexcept {
-//     if (size < 4096) {
-//         return defaultSlabAllocator.Malloc(size);
-//     }
-//     u32 i = 4096 << 11, j = 11;
-//     if (size > i) return nullptr;
-//     for (; i > 4096; i >>= 1, --j) {
-//         if (i >= size && (i >> 1) < size) return pageAllocator.AllocPageMem(j);
-//     }
-//     return nullptr;
-// }
-//
-// void operator delete (void* ptr, const std::nothrow_t& tag) noexcept {
-//     defaultSlabAllocator.Free(ptr);
-// }
+extern SlabArea defaultSlabZone;
+extern SlabAllocator defaultSlabAllocator;
 
 #endif
