@@ -23,6 +23,7 @@ public:
     void setPageTable(void* addr) {
         pageTable = addr;
     }
+    void setPGDL();
     void AddItem(u64 vaddr, u64 paddr);
     void DeleteItem(u64 vaddr);
     u64 V2P(u64 vaddr);
@@ -152,9 +153,6 @@ extern const u64 PageAreaStart;
 extern const u64 vaddrEnd;
 
 extern PageAllocator pageAllocator;
-extern MemSpace kernelSpace;
-extern TNode<Zone> kernelDirectZone;
-extern MemSpace* currentMemSpace;
 
 extern SlabNodeArea slabNodeZone;
 extern SlabNodeAllocator slabNodeAllocator;

@@ -8,14 +8,9 @@
 const u64 PageAreaStart = upAlign((u64 ) &KernelEnd, PAGE_SIZE_BIT);
 const u64 vaddrEnd = 1ull << (getPartical(getCPUCFG(1), 19, 12) - 1);
 
-UART uPut((u8 *)(0x1ff40800llu));
+UART uPut((u8 *)(0x800000001ff40800llu));
 
 PageAllocator pageAllocator;
-
-MemSpace kernelSpace(0, vaddrEnd);
-TNode<Zone> kernelDirectZone(DirectZone(0, 0xFFFFFFFF, 0));
-
-MemSpace *currentMemSpace;
 
 SlabNodeArea slabNodeZone;
 SlabNodeAllocator slabNodeAllocator;
@@ -34,9 +29,6 @@ void initMem()
 {
     __csrwr_d(0x13E4D52C, 0x1C);
     __csrwr_d(0x267, 0x1D);
-
-    kernelSpace.MMUService.setPageTable(pageAllocator.AllocPageMem(0));
-    kernelSpace.AddZone(&kernelDirectZone);
 }
 
 extern "C" void KernelMain() {
@@ -45,5 +37,6 @@ extern "C" void KernelMain() {
     SysException.IntOn();
     SysClock.ClockOn();
 
+    uPut << "Hello!";
     while (1);
 }

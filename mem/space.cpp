@@ -1,4 +1,5 @@
 #include <mem.h>
+#include <larchintrin.h>
 
 void Zone::OnPageFault(u64 vaddr)
 {
@@ -20,7 +21,7 @@ void MemSpace::AddZone(TNode<Zone>* t)
         else if (t->val.VStart > ct->VEnd) return 0;
         else return 1;
     }) == nullptr) {
-        Root->insert(&kernelDirectZone, [t](Zone *ct)->bool{
+        Root->insert(t, [t](Zone *ct)->bool{
             if (ct->VStart > t->val.VEnd) return 0;
             else return 1;
         });
