@@ -12,10 +12,10 @@ class TNode {
 	void rotate();
 public:
 	friend class Tree<TVal>;
-	TNode(const TVal &x): val(x){};
+	TNode(TVal && x): val(x){};
 	TNode<TVal>* f;
 	TNode<TVal>* child[2];
-	TVal val;
+	TVal & val;
 };
 
 template <typename TVal>

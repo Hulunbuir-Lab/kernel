@@ -1,9 +1,11 @@
 #include <exception.h>
 
+extern "C" {
+    void LoadContext();
+    void StoreContext();
+}
+
 Exception::Exception() {
-    __csrwr_d((u64) handleDefaultException, 0xC);
-    __csrwr_d((u64) handleTLBException, 0x88);
-    __csrwr_d((u64) handleMachineError, 0x93);
     __csrwr_w((1 << 13) - 1, 0x4);
 }
 
@@ -19,4 +21,32 @@ void Exception::IntOn(){
     __csrwr_w(crmd, 0x0);
 }
 
-Exception SysException;
+void Exception::HandleDefaultException() {
+    u32 estate = __csrrd_d(0x5);
+    switch (getPartical(estate, 21, 16)) {
+        case 0:
+            for (u8 intrOp = 12; intrOp >= 0; --intrOp) {
+                if (estate & (1 << intrOp)) {
+                    switch (intrOp) {
+                        case 11:
+                            uPut << "YY\n";
+                            SysTimer.TimerIntClear();
+                    }
+                    break;
+                }
+            }
+            break;
+        default:
+            uPut << "Exception\n";
+            uPut << "estate: " << estate << "\n";
+    }
+}
+
+void Exception::HandleTLBException() {
+
+}
+
+void Exception::HandleMachineError(){
+    uPut << "Machine Error\n";
+}
+

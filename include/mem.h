@@ -159,4 +159,6 @@ extern SlabNodeAllocator slabNodeAllocator;
 extern SlabArea defaultSlabZone;
 extern SlabAllocator defaultSlabAllocator;
 
+extern MemSpace *currentMemspace;
+
 #endif

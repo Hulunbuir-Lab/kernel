@@ -1,25 +1,12 @@
 #include <clock.h>
 
-Clock::Clock() {
-    __csrwr_d(0x10010, 0x41);
+Clock::Clock(u32* addr): baseAddress(addr) {
+    *(baseAddress + 24) = 0;
+    *(baseAddress + 16) = (1 << 8) + (1 << 11) + (1 << 13);
 }
 
-void Clock::ClockOff(){
-    u64 tcfg = __csrrd_d(0x41);
-    tcfg &= (~1ull);
-    __csrwr_d(tcfg, 0x41);
+RTCVal Clock::GetRTC() {
+    return RTCVal(*(baseAddress + 26));
 }
 
-void Clock::ClockOn() {
-    u64 tcfg = __csrrd_d(0x41);
-    tcfg |= 1;
-    __csrwr_d(tcfg, 0x41);
-}
-
-void Clock::ClockIntrClear() {
-    __csrwr_d(1, 0x44);
-    ClockOn();
-}
-
-
-Clock SysClock;
+RTCVal::RTCVal(u32 val): val(val) {}
