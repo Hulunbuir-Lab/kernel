@@ -49,6 +49,7 @@ void SlabAllocator::ListZone()
 SlabArea::SlabArea(): used(false){}
 
 void * SlabArea::Malloc(u16 size) {
+    if (size > 4096 - sizeof(SlabArea)) return nullptr;
     if (used == false) {
         pageMem = pageAllocator.AllocPageMem(0);
         Next = new ((void*) pageMem) SlabArea;
