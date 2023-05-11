@@ -10,10 +10,10 @@
 const u64 PageAreaStart = upAlign((u64 ) &KernelEnd, PAGE_SIZE_BIT);
 const u64 vaddrEnd = 1ull << (getPartical(getCPUCFG(1), 19, 12) - 1);
 
+UART uPut((u8 *)(0x800000001ff40800llu));
 Exception SysException;
 Timer SysTimer;
 Clock SysClock((u32 *) 0x800000001ff6C100llu);
-UART uPut((u8 *)(0x800000001ff40800llu));
 
 PageAllocator pageAllocator;
 ProcessController processController;

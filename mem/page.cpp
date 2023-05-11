@@ -1,9 +1,13 @@
 #include <mem.h>
 
 PageAllocator::PageAllocator(){
-    SetPageInfo(upAlign((u64)(&KernelEnd), PAGE_SIZE_BIT + PAGE_GROUP_SIZE_BIT), PageAreaStart);
+    SetPageInfo(upAlign((u64)(&KernelEnd), PAGEINFO_SIZE_BIT + PAGE_GROUP_SIZE_BIT), PageAreaStart);
 
-    AddArea(PageAreaStart, 0xFFFFFFF, 0);
+    u64 mprEnd = upAlign((u64) pageInfo + ((0xFFFFFFFF - pageAreaStart + 1) >> (PAGE_SIZE_BIT - PAGEINFO_SIZE_BIT)), PAGE_SIZE_BIT) - 1;
+
+    AddArea(PageAreaStart, (u64) pageInfo - 1, 0);
+    AddArea((u64) pageInfo, mprEnd, 1);
+    AddArea(mprEnd + 1, 0xFFFFFFF, 0);
     AddArea(0x10000000, 0x7FFFFFFF, 1);
     AddArea(0x80000000, 0xFFFFFFFF, 0);
 }

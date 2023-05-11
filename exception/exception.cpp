@@ -29,7 +29,6 @@ void Exception::HandleDefaultException() {
                 if (estate & (1 << intrOp)) {
                     switch (intrOp) {
                         case 11:
-                            uPut << "YY\n";
                             SysTimer.TimerIntClear();
                     }
                     break;

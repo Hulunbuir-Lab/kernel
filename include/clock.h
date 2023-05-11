@@ -2,6 +2,7 @@
 #define CLOCK_H
 
 #include <util.h>
+#include <uart.h>
 #include <compare>
 
 class RTCVal;
