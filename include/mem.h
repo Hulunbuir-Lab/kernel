@@ -4,6 +4,7 @@
 #include <util.h>
 #include <uart.h>
 #include <tree.h>
+#include <larchintrin.h>
 
 #define PAGE_GROUP_SIZE_BIT 12
 #define PAGE_SIZE_BIT 12
@@ -17,14 +18,39 @@ struct Page {
     u64 SizeBit;
 };
 
+struct ZoneConfig {
+    u8 mat:2;
+    u8 plv:2;
+    u8 rplv:1;
+    u8 d:1;
+    u8 nr:1;
+    u8 nx:1;
+};
+
+struct PTE{
+    u8 v:1;
+    u8 d:1;
+    u8 plv:2;
+    u8 mat:2;
+    u8 g:1;
+    u8 p:1;
+    u8 w:1;
+    u8 resv2:3;
+    u64 pa:36;
+    u16 resv1:13;
+    u8 nr:1;
+    u8 nx:1;
+    u8 rplv:1;
+};
+
 class MMU {
     void *pageTable;
+    inline void setConfig(PTE* p, ZoneConfig &config);
 public:
-    void setPageTable(void* addr) {
-        pageTable = addr;
-    }
+    MMU();
+    ~MMU();
     void setPGDL();
-    void AddItem(u64 vaddr, u64 paddr);
+    void AddItem(u64 vaddr, u64 paddr, ZoneConfig &config);
     void DeleteItem(u64 vaddr);
     u64 V2P(u64 vaddr);
 };
@@ -33,12 +59,13 @@ class MemSpace;
 
 class Zone {
 public:
-    Zone(u64 start, u64 end) :VStart(start), VEnd(end){}
+    Zone(u64 start, u64 end, ZoneConfig config) :VStart(start), VEnd(end), Config(config){}
 	virtual void OnPageFault(u64 vaddr);
+    virtual ~Zone() {}
 	u64 VStart;
 	u64 VEnd;
+    ZoneConfig Config;
     MemSpace *space;
-    u8 Attr;
 };
 
 class MemSpace {
@@ -46,8 +73,9 @@ public:
 	u64 VStart;
 	u64 VEnd;
 	MMU MMUService;
-	Tree<Zone> *Root;
+	Tree<Zone> *ZoneTree;
     MemSpace(u64 vStart, u64 vEnd);
+    ~MemSpace();
     void AddZone(TNode<Zone> *t);
     void DeleteZone(Zone *t);
 };
@@ -55,7 +83,7 @@ public:
 class DirectZone : public Zone {
 public:
     u64 Offset;
-    DirectZone(u64 vstart, u64 vend, u64 offset): Zone(vstart, vend), Offset(offset){}
+    DirectZone(u64 vstart, u64 vend, u64 offset, ZoneConfig config): Zone(vstart, vend, config), Offset(offset){}
     virtual void OnPageFault(u64 vaddr) override;
 };
 
@@ -158,7 +186,5 @@ extern SlabNodeArea slabNodeZone;
 extern SlabNodeAllocator slabNodeAllocator;
 extern SlabArea defaultSlabZone;
 extern SlabAllocator defaultSlabAllocator;
-
-extern MemSpace *currentMemspace;
 
 #endif

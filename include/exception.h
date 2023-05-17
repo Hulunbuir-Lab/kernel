@@ -5,6 +5,8 @@
 #include <uart.h>
 #include <timer.h>
 #include <larchintrin.h>
+#include <compare>
+#include <lwp.h>
 
 class Exception {
 public:

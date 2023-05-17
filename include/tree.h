@@ -12,19 +12,23 @@ class TNode {
 	void rotate();
 public:
 	friend class Tree<TVal>;
-	TNode(TVal && x): val(x){};
+	TNode(TVal *x): val(x){};
+	~TNode() { delete val; }
 	TNode<TVal>* f;
 	TNode<TVal>* child[2];
-	TVal & val;
+	TVal *val;
+	void ListNode();
 };
 
 template <typename TVal>
 class Tree {
+	friend class ProcessController;
 	TNode<TVal>* root;
 	void splay(TNode<TVal>* t, TNode<TVal>* p);
 public:
 	TNode<TVal>* find(std::function<u8 (TVal *)> check);
 	void insert(TNode<TVal>* node, std::function<bool (TVal *)> check);
+	void ListTree();
 };
 
 
@@ -62,7 +66,7 @@ TNode<TVal> * Tree<TVal>::find(std::function<u8 (TVal *)> check)
 {
 	TNode<TVal> *pt = root;
 	while (pt != nullptr) {
-		switch (check(&pt->val)){
+		switch (check(pt->val)){
 			case 0:
 				pt = pt->child[0];
 				break;
@@ -73,27 +77,40 @@ TNode<TVal> * Tree<TVal>::find(std::function<u8 (TVal *)> check)
 				pt = pt->child[1];
 		}
 	}
-	return pt;
+	return nullptr;
 }
 
 template<typename TVal>
 void Tree<TVal>::insert(TNode<TVal>* node, std::function<bool (TVal *)> check)
 {
-	TNode<TVal> *pt = root, *f;
+	TNode<TVal> *pt = root, *f = nullptr;
 	bool k;
 	while (pt != nullptr) {
 		f = pt;
-		if (check(&pt->val)) {
-			k = 0;
-			pt = pt->child[0];
-		}
-		else {
+		if (check(pt->val)) {
 			k = 1;
 			pt = pt->child[1];
+		}
+		else {
+			k = 0;
+			pt = pt->child[0];
 		}
 	}
 	if (f == nullptr) root = node;
 	else f->child[k] = node;
 }
+
+template<typename TVal>
+void TNode<TVal>::ListNode() {
+	uPut << &val << '\n';
+	if (child[0] != nullptr) child[0]->ListNode();
+	if (child[1] != nullptr) child[1]->ListNode();
+}
+
+template<typename TVal>
+void Tree<TVal>::ListTree() {
+	root->ListNode();
+}
+
 
 #endif

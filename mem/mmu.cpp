@@ -1,68 +1,84 @@
 #include <mem.h>
 
-struct PTE{
-    u8 rplv:1;
-    u8 nx:1;
-    u8 nr:1;
-    u16 resv1:13;
-    u64 pa:36;
-    u8 resv2:3;
-    u8 w:1;
-    u8 p:1;
-    u8 g:1;
-    u8 mat:2;
-    u8 plv:2;
-    u8 d:1;
-    u8 v:1;
-};
+MMU::MMU() {
+    pageTable = pageAllocator.AllocPageMem(0);
+}
 
-void MMU::AddItem(u64 vaddr, u64 paddr)
+MMU::~MMU() {
+    pageAllocator.FreePageMem(pageTable);
+}
+
+void MMU::setConfig(PTE* p, ZoneConfig& config) {
+    p->p = 1;
+    p->v = 1;
+    p->mat = config.mat;
+    p->d = config.d;
+    p->nr = config.nr;
+    p->nx = config.nx;
+    p->plv = config.plv;
+    p->rplv = config.rplv;
+}
+
+void MMU::AddItem(u64 vaddr, u64 paddr, ZoneConfig &config)
 {
     PTE* p1 = (PTE*) pageTable + getPartical(vaddr, 47, 39);
-    if (p1->pa == 0) {
+    if (p1->p == 0) {
+        setConfig(p1, config);
         p1->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p2 = (PTE*) (p1->pa << 12) + getPartical(vaddr, 38, 30);
-    if (p2->pa == 0) {
+    if (p2->p == 0) {
+        setConfig(p2, config);
         p2->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
-    if (p2->pa == 0) {
-        p2->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
+    if (p3->p == 0) {
+        setConfig(p3, config);
+        p3->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
     PTE* p4 = (PTE*) (p3->pa << 12) + getPartical(vaddr, 20, 12);
+    setConfig(p4, config);
     p4->pa = paddr >> 12;
+    __ldpte_d(p4, 0);
+    __ldpte_d(p4, 1);
 }
 
 void MMU::DeleteItem(u64 vaddr)
 {
     PTE* p1 = (PTE*) pageTable + getPartical(vaddr, 47, 39);
-    if (p1->pa == 0) return;
+    if (p1->p == 0) return;
 
     PTE* p2 = (PTE*) (p1->pa << 12) + getPartical(vaddr, 38, 30);
-    if (p2->pa == 0) return;
+    if (p2->p == 0) return;
 
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
-    if (p2->pa == 0) return;
+    if (p3->p == 0) return;
 
     PTE* p4 = (PTE*) (p3->pa << 12) + getPartical(vaddr, 20, 12);
-    p4->pa = 0;
+    p4->p = 0;
 }
 
 u64 MMU::V2P(u64 vaddr)
 {
     PTE* p1 = (PTE*) pageTable + getPartical(vaddr, 47, 39);
-    if (p1->pa == 0) return 0;
+    if (p1->p == 0) return 0;
 
     PTE* p2 = (PTE*) (p1->pa << 12) + getPartical(vaddr, 38, 30);
-    if (p2->pa == 0) return 0;
+    if (p2->p == 0) return 0;
 
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
-    if (p2->pa == 0) return 0;
+    if (p3->p == 0) return 0;
 
     PTE* p4 = (PTE*) (p3->pa << 12) + getPartical(vaddr, 20, 12);
-    return p4->pa;
+    if (p4->p == 0) return 0;
+    else return (p4->pa << 12) + getPartical(vaddr, 11, 0);
 }
+
+void MMU::setPGDL()
+{
+    __csrwr_d((u64) pageTable, 0x19);
+}
+

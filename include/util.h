@@ -1,6 +1,8 @@
 #ifndef UTIL_H_INCLUDED
 #define UTIL_H_INCLUDED
 
+#include <compare>
+
 using u64 = unsigned long long;
 using u32 = unsigned int;
 using u16 = unsigned short;
@@ -37,6 +39,27 @@ class Mutex {
 public:
     void Lock();
     void Unlock();
+};
+
+class Jiffies{
+    u64 val;
+    static u64 sysJiffies;
+    friend class Exception;
+public:
+    friend auto operator <=> (const Jiffies & a, const Jiffies & b) {
+        Jiffies now = GetJiffies();
+        return (a.val - now.val) <=> (b.val - now.val);
+    }
+    friend auto operator + (const Jiffies & a, const Jiffies & b) {
+        return Jiffies(a.val + b.val);
+    }
+    operator unsigned int() {
+        return val;
+    }
+    static Jiffies GetJiffies() {
+        return Jiffies(sysJiffies);
+    }
+    Jiffies(u64 val = 0):val(val){}
 };
 
 #endif // UTIL_H_INCLUDED

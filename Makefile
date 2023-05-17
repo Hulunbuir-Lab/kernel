@@ -7,7 +7,6 @@ SOURCES = $(wildcard kernel.cpp \
 		     uart/*.cpp \
 		     mem/*.cpp \
 		     exception/*.cpp \
-		     clock/*.cpp \
 		     timer/*.cpp \
 		     lwp/*.cpp \
 	   )

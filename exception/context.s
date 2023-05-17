@@ -3,7 +3,7 @@
 .globl HandleMachineErrorEntry
 .globl HandleDefaultExceptionEntry
 .globl HandleTLBExceptionEntry
-.globl hello
+.globl StartProcess
 
 .extern handleMachineError
 .extern handleDefaultException
@@ -102,11 +102,20 @@ HandleMachineErrorEntry:
 HandleTLBExceptionEntry:
     storeContext
     bl handleTLBException
+    tlbfill
     loadContext
     ertn
 
 HandleDefaultExceptionEntry:
     storeContext
     bl handleDefaultException
+    loadContext
+    ertn
+
+StartProcess:
+    li.d $t0, 0x7
+    csrwr $t0, 0x1
+    la.local $t0, SysSp
+    st.d $sp, $t0, 0
     loadContext
     ertn

@@ -2,7 +2,7 @@
 #define LWP_H
 
 #include <mem.h>
-#include <clock.h>
+#include <exception.h>
 #include <larchintrin.h>
 
 const u16 prioRatios[8] = { 100, 200, 300, 400, 500, 600, 700, 800 };
@@ -17,19 +17,21 @@ class Process {
 public:
     Process(u8 priority, u8 nice, void* startAddress);
     ~Process();
-    static void testEntryA();
-    static void testEntryB();
+    u8 Id;
     Process *Next;
     u8 Priority;
     u8 Nice;
-    RTCVal Deadline;
+    Jiffies Deadline;
     void Resume();
     void Pause();
+    MemSpace *GetSpace() {
+        return space;
+    }
 };
 
 class ProcessController {
     u8 headBitMap = 0;
-    Process *head[8];
+    Process *bfsHead[8];
 public:
     ProcessController();
     Process *CurrentProcess;

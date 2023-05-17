@@ -2,24 +2,40 @@
 
 extern u64 ContextReg[30];
 
-void Process::testEntryA() {
-    while (1)
-    uPut << "A";
+static u8 t = 0;
+
+static u8 getId() {
+    return t++;
 }
 
-void Process::testEntryB() {
-    while (1)
-    uPut << "B";
+__attribute__((aligned(4 * 1024)))
+static void testEntryA() {
+    while (1) {
+        __asm__ (
+            "syscall 0"
+        );
+    }
+}
+
+__attribute__((aligned(4 * 1024)))
+static void testEntryB() {
+    while (1) {
+        __asm__ (
+            "syscall 1"
+        );
+    }
 }
 
 Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), Nice(nice){
+    Id = getId();
     space = new MemSpace(0, 0xFFFFFFFFFFFFFFFF);
-    text = new TNode<Zone>(DirectZone(0, 0x0FF, (u64) startAddress));
-    stack = new TNode<Zone>(Zone(0x100, 0x5FF));
+    text = new TNode<Zone>(new DirectZone(0, 0xFFF, (u64) startAddress, ZoneConfig{1, 3, 0, 0, 0, 0}));
+    stack = new TNode<Zone>(new Zone(0x1000, 0x5FFF, ZoneConfig{1, 3, 0, 1, 0, 0}));
     space->AddZone(text);
     space->AddZone(stack);
-    pc = (u64) startAddress;
-    sp = 0x600;
+
+    pc = 0x0;
+    sp = 0x6000;
 }
 
 Process::~Process() {
@@ -28,15 +44,17 @@ Process::~Process() {
     delete space;
 }
 
-inline void Process::Resume() {
+void Process::Resume() {
     for (u64 i = 0; i < 30; ++i) {
         ContextReg[i] = reg[i];
     }
     __csrwr_d(sp, 0x30);
     __csrwr_d(pc, 0x6);
+    __csrwr_d(Id, 0x18);
+    GetSpace()->MMUService.setPGDL();
 }
 
-inline void Process::Pause() {
+void Process::Pause() {
     for (u64 i = 0; i < 30; ++i) {
         reg[i] = ContextReg[i];
     }
@@ -44,34 +62,37 @@ inline void Process::Pause() {
     pc = __csrrd_d(0x6);
 }
 
-ProcessController::ProcessController() {
-
-}
-
 void ProcessController::StopCurrentProcess() {
     if (CurrentProcess == nullptr) return;
     CurrentProcess->Pause();
-    CurrentProcess->Deadline = RTCVal(prioRatios[CurrentProcess->Nice]) + SysClock.GetRTC();
-    CurrentProcess->Next = head[CurrentProcess->Priority];
-    head[CurrentProcess->Priority] = CurrentProcess;
-    headBitMap &= (1 << (CurrentProcess->Priority));
+    CurrentProcess->Deadline = Jiffies(prioRatios[CurrentProcess->Nice]) + Jiffies::GetJiffies();
+    CurrentProcess->Next = bfsHead[CurrentProcess->Priority];
+    bfsHead[CurrentProcess->Priority] = CurrentProcess;
+    headBitMap |= (1 << (CurrentProcess->Priority));
+    CurrentProcess = nullptr;
 }
 
-inline void ProcessController::HandleSchedule() {
+void ProcessController::HandleSchedule() {
     if (!(headBitMap & (0x11111111u << (CurrentProcess->Priority)))) return;
     StopCurrentProcess();
     for (u8 i = 7; i >= 0; --i) {
         if (headBitMap & (1 << i)) {
-            Process *processToExec = head[i], *from;
-            for (Process *pt = head[i]->Next; pt != nullptr; from = pt, pt = pt->Next) {
-                if (pt->Deadline < processToExec->Deadline) processToExec = pt;
+            Process *processToExec = bfsHead[i], *processToExecFrom = nullptr;
+            for (Process *pt = bfsHead[i], *from = nullptr; pt != nullptr; from = pt, pt = pt->Next) {
+                if (pt->Deadline < processToExec->Deadline) {
+                    processToExecFrom = from;
+                    processToExec = pt;
+                }
             }
             CurrentProcess = processToExec;
-            if (from != nullptr) from->Next = CurrentProcess->Next;
-            else {
-                head[i] = CurrentProcess->Next;
-                if (head[i] == nullptr) headBitMap &= (~(1 << i));
+            if (processToExecFrom != nullptr) {
+                processToExecFrom->Next = CurrentProcess->Next;
             }
+            else {
+                bfsHead[i] = CurrentProcess->Next;
+                if (bfsHead[i] == nullptr) headBitMap &= (~(1 << i));
+            }
+            CurrentProcess->Next = nullptr;
             CurrentProcess->Resume();
             break;
         }
@@ -85,7 +106,13 @@ void ProcessController::InsertProcess(Process* process) {
         CurrentProcess->Resume();
         return;
     }
-    process->Deadline = RTCVal(prioRatios[process->Nice]) + SysClock.GetRTC();
-    process->Next = head[process->Priority];
-    head[process->Priority] = process;
+    process->Deadline = Jiffies(prioRatios[process->Nice]) + Jiffies::GetJiffies();
+    process->Next = bfsHead[process->Priority];
+    bfsHead[process->Priority] = process;
+    headBitMap |= (1 << process->Priority);
+}
+
+ProcessController::ProcessController() {
+    InsertProcess(new Process(7, 0, (void *) testEntryA));
+    InsertProcess(new Process(7, 0, (void *) testEntryB));
 }
