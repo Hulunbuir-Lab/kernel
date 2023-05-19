@@ -8,24 +8,6 @@ static u8 getId() {
     return t++;
 }
 
-__attribute__((aligned(4 * 1024)))
-static void testEntryA() {
-    while (1) {
-        __asm__ (
-            "syscall 0"
-        );
-    }
-}
-
-__attribute__((aligned(4 * 1024)))
-static void testEntryB() {
-    while (1) {
-        __asm__ (
-            "syscall 1"
-        );
-    }
-}
-
 Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), Nice(nice){
     Id = getId();
     space = new MemSpace(0, 0xFFFFFFFFFFFFFFFF);
@@ -51,7 +33,7 @@ void Process::Resume() {
     __csrwr_d(sp, 0x30);
     __csrwr_d(pc, 0x6);
     __csrwr_d(Id, 0x18);
-    GetSpace()->MMUService.setPGDL();
+    GetSpace()->MMUService.SetPGDL();
 }
 
 void Process::Pause() {
@@ -113,6 +95,5 @@ void ProcessController::InsertProcess(Process* process) {
 }
 
 ProcessController::ProcessController() {
-    InsertProcess(new Process(7, 0, (void *) testEntryA));
-    InsertProcess(new Process(7, 0, (void *) testEntryB));
+
 }

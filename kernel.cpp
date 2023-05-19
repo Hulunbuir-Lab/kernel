@@ -56,7 +56,7 @@ inline void initException() {
     __csrwr_d((u64)&HandleMachineErrorEntry, 0x93);
 
     SysException.IntOn();
-    SysTimer.TimerOn();
+    //SysTimer.TimerOn();
 }
 
 extern "C" void KernelMain() {
@@ -64,8 +64,8 @@ extern "C" void KernelMain() {
     initMem();
     initException();
 
-    extern void StartProcess();
+    //extern void StartProcess();
 
-    StartProcess();
+    //StartProcess();
     while (1);
 }

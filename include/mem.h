@@ -49,7 +49,7 @@ class MMU {
 public:
     MMU();
     ~MMU();
-    void setPGDL();
+    void SetPGDL();
     void AddItem(u64 vaddr, u64 paddr, ZoneConfig &config);
     void DeleteItem(u64 vaddr);
     u64 V2P(u64 vaddr);
@@ -99,9 +99,9 @@ class PageAllocator {
     }
     void addPageToBuddy(Page* t);
     void deletePageFromBuddy(Page *t);
+    void setPageInfo(u64 pageInfoAddress, u64 pageAreaStart);
 public:
 	PageAllocator();
-    void SetPageInfo(u64 pageInfoAddress, u64 pageAreaStart);
 	u64 PageToAddr(Page* t) {
       return (((t - pageInfo) << PAGE_SIZE_BIT) + (u64) pageAreaStart);
     }

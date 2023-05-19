@@ -77,7 +77,7 @@ u64 MMU::V2P(u64 vaddr)
     else return (p4->pa << 12) + getPartical(vaddr, 11, 0);
 }
 
-void MMU::setPGDL()
+void MMU::SetPGDL()
 {
     __csrwr_d((u64) pageTable, 0x19);
 }
