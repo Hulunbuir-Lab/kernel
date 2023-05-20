@@ -5,6 +5,7 @@
 #include <larchintrin.h>
 #include <timer.h>
 #include <lwp.h>
+#include <sdcard.h>
 
 const u64 PageAreaStart = upAlign((u64 ) &KernelEnd, PAGE_SIZE_BIT);
 const u64 vaddrEnd = 1ull << (getPartical(getCPUCFG(1), 19, 12) - 1);
@@ -21,6 +22,7 @@ SlabArea defaultSlabZone;
 SlabAllocator defaultSlabAllocator;
 
 ProcessController processController;
+SDCard sdcard((u32*)0x800000001ff64000);
 
 extern "C" {
     void handleDefaultException() {
@@ -64,8 +66,7 @@ extern "C" void KernelMain() {
     initMem();
     initException();
 
-    //extern void StartProcess();
+    sdcard.test();
 
-    //StartProcess();
     while (1);
 }

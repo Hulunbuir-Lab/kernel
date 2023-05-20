@@ -9,6 +9,7 @@ SOURCES = $(wildcard kernel.cpp \
 		     exception/*.cpp \
 		     timer/*.cpp \
 		     lwp/*.cpp \
+		     sdcard/*.cpp \
 	   )
 
 OBJS = loader.o exception/context.o $(SOURCES:%.cpp=%.o)
