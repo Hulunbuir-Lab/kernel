@@ -22,7 +22,7 @@ SlabArea defaultSlabZone;
 SlabAllocator defaultSlabAllocator;
 
 ProcessController processController;
-SDCard sdcard((u32*)0x800000001ff64000);
+SDCard sdcard((void*)0x800000001ff64000, (void*) 0x800000001fe10c30);
 
 extern "C" {
     void handleDefaultException() {
@@ -65,8 +65,6 @@ extern "C" void KernelMain() {
     invokeInit();
     initMem();
     initException();
-
-    sdcard.test();
 
     while (1);
 }

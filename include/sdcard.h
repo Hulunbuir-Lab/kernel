@@ -3,13 +3,21 @@
 
 #include <util.h>
 #include <uart.h>
+#include <mem.h>
 
 class SDCard {
     u32 *baseAddress;
-    void execCmd(u8 cmdId);
+    u32 *dmaAddress;
+    u32 rca;
+    u32 execShortCmd(u8 cmdId, u32 arg);
+    u32 execLongCmd(u8 cmdId, u32 arg);
+    u32 getShortResponse() {
+        return *(baseAddress + 5);
+    }
 public:
-    SDCard(void* addr);
-    void test();
+    SDCard(void* addr, void* dma);
+    void ReadBlock(u8 addr, void* buf);
+    void WriteBlock(u8 addr, void* buf);
 };
 
 #endif

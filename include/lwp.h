@@ -7,6 +7,11 @@
 
 const u16 prioRatios[8] = { 100, 200, 300, 400, 500, 600, 700, 800 };
 
+class ELFProgram {
+public:
+    ELFProgram();
+};
+
 class Process {
     MemSpace *space;
     TNode<Zone> *text;

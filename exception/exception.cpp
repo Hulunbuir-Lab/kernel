@@ -57,7 +57,7 @@ void Exception::HandleDefaultException() {
 
 void Exception::HandleTLBException() {
     if (!processController.CurrentProcess) {
-        uPut << "Kernel Panic";
+        uPut << (void*)__csrrd_d(0x89) << '\n' << (void*)__csrrd_d(0x90) << '\n' << "Kernel Panic" << '\n';
         while (1);
     }
 
