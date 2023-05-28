@@ -30,7 +30,7 @@ SDCard::SDCard(void* addr, void* dma): baseAddress((u32 *)addr), dmaAddress((u32
     *(baseAddress + 10) = 512;
 }
 
-void SDCard::ReadBlock(u8 addr, void* buf) {
+void SDCard::ReadBlock(u32 addr, void* buf) {
     u32 *s = (u32*)pageAllocator.AllocPageMem(0);
     *(s + 1) = (u64)buf;
     *(s + 2) = (u64)(baseAddress + 16);
@@ -43,7 +43,7 @@ void SDCard::ReadBlock(u8 addr, void* buf) {
     pageAllocator.FreePageMem(s);
 }
 
-void SDCard::WriteBlock(u8 addr, void* buf) {
+void SDCard::WriteBlock(u32 addr, void* buf) {
     *(baseAddress + 11) = 1 + (1 << 14) + (1 << 15) + (1 << 16);
     u32 *s = (u32*)pageAllocator.AllocPageMem(0);
     *(s + 1) = (u64)buf;

@@ -16,8 +16,8 @@ class SDCard {
     }
 public:
     SDCard(void* addr, void* dma);
-    void ReadBlock(u8 addr, void* buf);
-    void WriteBlock(u8 addr, void* buf);
+    void ReadBlock(u32 addr, void* buf);
+    void WriteBlock(u32 addr, void* buf);
 };
 
 #endif
