@@ -9,6 +9,7 @@
 #include <lwp.h>
 
 class Exception {
+
 public:
     void HandleMachineError();
     void HandleTLBException();

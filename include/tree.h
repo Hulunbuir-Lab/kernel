@@ -1,8 +1,8 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include <util.h>
 #include <functional>
+#include <util.h>
 
 template <typename TVal>
 class Tree;

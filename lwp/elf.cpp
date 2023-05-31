@@ -1,5 +1,5 @@
-#include <lwp.h>
-
+// #include <lwp.h>
+//
 // ELFProgram::ELFProgram() {
 //     u8 *elfFileAddress = elfFile.readFile();
 //     if (*((u32*) elfFileAddress) != 0x7F) {

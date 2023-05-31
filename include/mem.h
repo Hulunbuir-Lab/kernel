@@ -6,7 +6,7 @@
 #include <tree.h>
 #include <larchintrin.h>
 
-#define PAGE_GROUP_SIZE_BIT 12
+#define PAGE_GROUP_SIZE_BIT 16
 #define PAGE_SIZE_BIT 12
 #define PAGE_SIZE (1 << PAGE_SIZE_BIT)
 #define PAGEINFO_SIZE_BIT 5

@@ -5,9 +5,9 @@ LDFLAGS = -Tkernel.ld -g -std=c++20 -ffreestanding -fno-stack-protector -nostart
 SOURCES = $(wildcard kernel.cpp \
 		     util/*.cpp \
 		     uart/*.cpp \
-		     mem/*.cpp \
 		     exception/*.cpp \
 		     timer/*.cpp \
+		     mem/*.cpp \
 		     lwp/*.cpp \
 		     sdcard/*.cpp \
 	   )

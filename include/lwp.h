@@ -7,6 +7,21 @@
 
 const u16 prioRatios[8] = { 100, 200, 300, 400, 500, 600, 700, 800 };
 
+struct ELFHeader {
+    u32 MagicNum;
+    u8 BitSize;
+    u8 Endian;
+    u8 HeaderVer;
+    u8 OSABI;
+    u64 Padding;
+    u16 ELFType;
+    u16 Architecture;
+    u32 ELFVersion;
+    u64 ProgramEntryPosition;
+    u64 ProgramHeaderTablePosition;
+    u64 SectionHeaderTablePosition;
+};
+
 class ELFProgram {
 public:
     ELFProgram();

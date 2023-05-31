@@ -20,4 +20,6 @@ public:
     void WriteBlock(u32 addr, void* buf);
 };
 
+extern SDCard sdcard;
+
 #endif
