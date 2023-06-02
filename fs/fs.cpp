@@ -172,7 +172,7 @@ static xfile_type_t get_file_type(const dirEntry *diritem) {
 
     return type;
 }
-
+int clusterLevel = 0;
 void fat32_mount(){
     char buf[512];
     memset(buf,0,512);
@@ -188,9 +188,13 @@ void fat32_mount(){
     int sectors = 0x1000 / 0x200;  //8
     for(;sectors<=SUPERBLOCK.sectorPerFat; level++,sectors*=2)
         ;
+    int pageSize = 0x1000;
     fatTable = (unsigned int *)pageAllocator.AllocPageMem(level);
     for(int i=0; i<SUPERBLOCK.sectorPerFat; i++)
         sdcard.ReadBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(uint32)*i));
+    for(;pageSize >= SUPERBLOCK.sectorPerCluster*0x200; pageSize*=2)
+        ;
+    uPut<<"pageSize="<<clusterLevel<<"\n";
     for(int i=0; i<OPENFILENUM; i++){
         fileTable[i].count = 0;
     }
@@ -248,8 +252,18 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
     }while(is_cluster_valid(currCluster));
     return FS_ERR_EOF;
 }
-void readCluster(void **bufClusrer){
-
+void readCluster(uint8 *bufClusrer,uint32 clusterNum){
+    int startSector = clusterFirstSector(clusterNum);
+    uPut<<"startsector="<<startSector<<"\n";
+    for(int i=0; i<SUPERBLOCK.sectorPerCluster; i++){
+        uPut<<"i="<<i<<"\n";
+        uPut<<"(startSector+i)*512="<<(startSector+i)*512<<"\n";
+        sdcard.ReadBlock((startSector+i)*512,(uint8 *)bufClusrer+512*i);
+        uPut<<"ppppppppppppp"<<"\n";
+        uPut<<"qqqqqqqqqqqq"<<"\n";
+        //uPut<<bufClusrer[0]<<"\n";
+        uPut<<"qqqqqqqqqqqq"<<"\n";
+    }
 }
 int openSubFile(u32 dirCluster, struct file *file0,const char *path){
     u32 parentCluster = dirCluster;
@@ -275,6 +289,7 @@ int openSubFile(u32 dirCluster, struct file *file0,const char *path){
         file0->size = dirEntry0.DIR_FileSize;
         file0->type = get_file_type(&dirEntry0);
         file0->attr = dirEntry0.DIR_Attr;
+        file0->start_cluster = getDirEntryCluster(&dirEntry0);
         file0->curr_cluster = fileStartCluster;
         file0->dir_cluster = parentCluster;
         file0->dir_cluster_offset = parentClusterOffset;
@@ -316,8 +331,8 @@ int open(const char *path,struct file *file0){
     openSubFile(rootCluster,file0,path);
     return 0;
 }
-
-int read(sturct file *flie0, unsigned char *buf, int count){
+uint8 bufTemp[4096];
+int read(struct file *file0, unsigned char *bufDst, int count){
     uint32 alreadyReaded = 0;
     if(file0->pos > file0->size){
         return 0;
@@ -325,18 +340,46 @@ int read(sturct file *flie0, unsigned char *buf, int count){
     if(file0->pos + count > file0->size){
         count = file0->size - file0->pos; 
     }
-    while(count > 0 && is_cluster_valid(file0->curr_cluster)){
-
+    int filesize = file0->size,pageSize = 0x1000;
+    int level = 0;
+    for(;pageSize>=filesize; level++)
+        pageSize*=2;
+    //bufTemp = (uint8 *)pageAllocator.AllocPageMem(level);
+    memset(bufTemp,0,4096);
+    uPut<<"filesize="<<filesize<<"\n";
+    uPut<<"SUPERBLOCK.sectorPerCluster*512="<<SUPERBLOCK.sectorPerCluster*512<<"\n";
+    int clusterCount = filesize / (SUPERBLOCK.sectorPerCluster*512);
+    uPut<<"clustercount="<<clusterCount<<"\n";
+    clusterCount = (filesize % (SUPERBLOCK.sectorPerCluster*512) == 0)? (clusterCount):(clusterCount+1);
+    int cluterNum = file0->start_cluster;
+    uPut<<"clusterNum="<<cluterNum<<"\n";
+    uPut<<"clustercount="<<clusterCount<<"\n";
+    for(int i=0; i<clusterCount && is_cluster_valid(cluterNum); i++){
+        readCluster(bufTemp+i*SUPERBLOCK.sectorPerCluster*512,cluterNum);
+        cluterNum = fatTable[cluterNum];
     }
-    return alreadyReaded;
+    memcpy(bufDst,bufTemp+file0->pos,count);
+    return count;
+}
+void printStr(uint8 *str0){
+    int i=0;
+    while(str0[i]){
+        uPut<<(char )str0[i];
+        i++;
+    }
+    uPut<<"\n";
 }
 void fstest0(){
     struct file file0;
     memset(&file0,0,sizeof(struct file));
     uPut<<file0.size<<"\n";
     uPut<<"start0"<<"\n";
-    open("/dir1/erge",&file0);
+    open("/dir1/abc.txt",&file0);
     uPut<<"finish0"<<"\n";
     uPut<<file0.size<<"\n";
-    char buf[512]={0};
+    uint8 buf[4096];
+    memset(buf,0,512);
+    read(&file0,buf,2000);
+    uPut<<buf<<"\n";
+    printStr(buf);
 }
