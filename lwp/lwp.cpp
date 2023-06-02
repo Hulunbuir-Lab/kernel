@@ -2,28 +2,23 @@
 
 extern u64 ContextReg[30];
 
-static u8 t = 0;
+static u16 t = 0;
 
-static u8 getId() {
+static u16 getId() {
     return t++;
 }
 
 Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), Nice(nice){
     Id = getId();
-    space = new MemSpace(0, 0xFFFFFFFFFFFFFFFF);
-    text = new TNode<Zone>(new DirectZone(0, 0xFFF, (u64) startAddress, ZoneConfig{1, 3, 0, 0, 0, 0}));
-    stack = new TNode<Zone>(new Zone(0x1000, 0x5FFF, ZoneConfig{1, 3, 0, 1, 0, 0}));
-    space->AddZone(text);
-    space->AddZone(stack);
-
-    pc = 0x0;
+    space = new MemSpace(0x0, 0xFFFFFFFFFFFF);
+    pc = (u64) startAddress;
     sp = 0x6000;
 }
 
 Process::~Process() {
-    delete text;
-    delete stack;
-    delete space;
+    __csrwr_d(pc, 0x6);
+    __csrwr_d(Id, 0x18);
+    GetSpace()->MMUService.SetPGDL();
 }
 
 void Process::Resume() {
@@ -94,6 +89,4 @@ void ProcessController::InsertProcess(Process* process) {
     headBitMap |= (1 << process->Priority);
 }
 
-ProcessController::ProcessController() {
-
-}
+ProcessController::ProcessController() {}

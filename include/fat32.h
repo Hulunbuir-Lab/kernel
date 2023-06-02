@@ -99,3 +99,6 @@ void fstest0();
 #define is_path_sep(ch)         (((ch) == '\\') || ((ch == '/')))       // 判断是否是文件名分隔符
 #define is_path_end(path)       (((path) == 0) || (*path == '\0'))  
 #define SFN_LEN                     11   
+
+int open(const char *path,struct file *file0);
+int read(struct file *file0, unsigned char *bufDst, int count);

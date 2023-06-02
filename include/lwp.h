@@ -14,17 +14,39 @@ struct ELFHeader {
     u8 HeaderVer;
     u8 OSABI;
     u64 Padding;
-    u16 ELFType;
+    u16 Type;
     u16 Architecture;
     u32 ELFVersion;
-    u64 ProgramEntryPosition;
-    u64 ProgramHeaderTablePosition;
-    u64 SectionHeaderTablePosition;
+    u64 ProgramEntryAddr;
+    u64 PHTBAddr;
+    u64 SHTBAddr;
+    u32 Flags;
+    u16 HeaderSize;
+    u16 SizeofEntryInPHTB;
+    u16 NumofEntriesInPHTB;
+    u16 SizeofEntryInSHTB;
+    u16 NumofEntriesInSHTB;
+    u16 IndexInSHTB;
+};
+
+struct PHTB {
+    u32 Type;
+    u64 DataAddr;
+    u64 MemAddr;
+    u64 Resv;
+    u64 SizeOfSegmentInFile;
+    u64 SizeOfSegmentInMem;
+    u32 Flags;
+    u64 Align;
 };
 
 class ELFProgram {
 public:
-    ELFProgram();
+    ELFHeader *header;
+    PHTB* phtb;
+    ELFProgram(void* addr);
+    void ShowInfo();
+    void CreateProcess();
 };
 
 class Process {
@@ -37,7 +59,7 @@ class Process {
 public:
     Process(u8 priority, u8 nice, void* startAddress);
     ~Process();
-    u8 Id;
+    u16 Id;
     Process *Next;
     u8 Priority;
     u8 Nice;

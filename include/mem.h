@@ -14,8 +14,10 @@
 struct Page {
 	Page *Prev;
 	Page *Next;
-	u64 RefCount;
-    u64 SizeBit;
+	u32 RefCount;
+    u32 SizeBit;
+    u32 Valid;
+    u32 Resv;
 };
 
 struct ZoneConfig {

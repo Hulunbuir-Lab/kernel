@@ -37,6 +37,7 @@ void PageAllocator::addPageToBuddy(Page* t)
         buddyHeadList[t->SizeBit]->Prev = t;
     }
     buddyHeadList[t->SizeBit] = t;
+    t->Valid = 1;
 }
 
 void PageAllocator::deletePageFromBuddy(Page* t)
@@ -45,6 +46,7 @@ void PageAllocator::deletePageFromBuddy(Page* t)
     if (t->Prev) t->Prev->Next = t->Next;
     else buddyHeadList[t->SizeBit] = t->Next;
     t->Next = t->Prev = nullptr;
+    t->Valid = 0;
 }
 
 Page* PageAllocator::AllocPage(u8 sizeBit) {
@@ -74,7 +76,7 @@ void PageAllocator::FreePage(Page* t)
     Page *buddy;
     for (; t->SizeBit < PAGE_GROUP_SIZE_BIT; ++t->SizeBit) {
         buddy = getBuddyPage(t);
-        if (buddy->RefCount == 0) {
+        if (buddy->Valid == 1) {
             deletePageFromBuddy(buddy);
             setupPage(buddy, t->SizeBit);
             t = buddy - t > 0 ? t : buddy;
