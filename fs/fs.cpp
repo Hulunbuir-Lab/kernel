@@ -194,10 +194,10 @@ void fat32_mount(){
         sdcard.ReadBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(uint32)*i));
     for(;pageSize >= SUPERBLOCK.sectorPerCluster*0x200; pageSize*=2)
         ;
-    uPut<<"pageSize="<<clusterLevel<<"\n";
     for(int i=0; i<OPENFILENUM; i++){
         fileTable[i].count = 0;
     }
+    uPut<<"secClus="<<SUPERBLOCK.sectorPerCluster*512<<"\n";
 }
 
 
@@ -331,7 +331,8 @@ int open(const char *path,struct file *file0){
     openSubFile(rootCluster,file0,path);
     return 0;
 }
-uint8 bufTemp[4096];
+#define MAXFILESIZE 1024*1024
+uint8 bufTemp[MAXFILESIZE];
 int read(struct file *file0, unsigned char *bufDst, int count){
     uint32 alreadyReaded = 0;
     if(file0->pos > file0->size){
@@ -345,7 +346,7 @@ int read(struct file *file0, unsigned char *bufDst, int count){
     for(;pageSize>=filesize; level++)
         pageSize*=2;
     //bufTemp = (uint8 *)pageAllocator.AllocPageMem(level);
-    memset(bufTemp,0,4096);
+    memset(bufTemp,0,MAXFILESIZE);
     uPut<<"filesize="<<filesize<<"\n";
     uPut<<"SUPERBLOCK.sectorPerCluster*512="<<SUPERBLOCK.sectorPerCluster*512<<"\n";
     int clusterCount = filesize / (SUPERBLOCK.sectorPerCluster*512);
@@ -369,17 +370,17 @@ void printStr(uint8 *str0){
     }
     uPut<<"\n";
 }
+uint8 buf1[4096*4];
 void fstest0(){
     struct file file0;
     memset(&file0,0,sizeof(struct file));
     uPut<<file0.size<<"\n";
     uPut<<"start0"<<"\n";
-    open("/dir1/abc.txt",&file0);
+    open("/qhl",&file0);
     uPut<<"finish0"<<"\n";
     uPut<<file0.size<<"\n";
-    uint8 buf[4096];
-    memset(buf,0,512);
-    read(&file0,buf,2000);
-    uPut<<buf<<"\n";
-    printStr(buf);
+    memset(buf1,0,4096*4);
+    read(&file0,buf1,15000);
+    uPut<<buf1<<"\n";
+    printStr(buf1);
 }
