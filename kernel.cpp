@@ -78,5 +78,6 @@ extern "C" void KernelMain() {
     SysTimer.TimerOn();
     extern void StartProcess();
     StartProcess();
+
     while (1);
 }

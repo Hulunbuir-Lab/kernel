@@ -33,18 +33,25 @@ void Exception::HandleDefaultException() {
             }
             break;
         case 0xB:
-            {
-                u16 code = getPartical(__csrrd_d(0x8), 14, 0);
-                if (code == 0) {
-                    uPut << 'A';
-                    for (u32 i = 0; i < 3000000; ++i);
-                }
-                else if (code == 1) {
-                    uPut << 'B';
-                    for (u32 i = 0; i < 3000000; ++i);
-                }
-            }
+            uPut << "Syscall\n";
+            while (1);
             break;
+        case 0x1:
+        case 0x2:
+            uPut << "Page Invalid\n";
+            uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
+            uPut << "BADV: " << (void*) __csrrd_d(0x7) << '\n';
+            __csrwr_d(__csrrd_d(0x7), 0x11);
+            uPut << "original TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
+            __asm__(
+                "tlbsrch\n"
+                "tlbrd"
+            );
+            uPut << "TLBIDX: " << (void*) __csrrd_d(0x10) << '\n';
+            uPut << "TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
+            uPut << "TLBELO0: " << (void*) __csrrd_d(0x12) << '\n';
+            uPut << "TLBELO1: " << (void*) __csrrd_d(0x13) << '\n';
+            while (1);
         default:
             uPut << "Exception\n";
             uPut << "ESTATE: " << (void*) estate << '\n';
@@ -67,6 +74,10 @@ void Exception::HandleTLBException() {
         else if (addr < t->VStart) return 0;
         else return 2;
     });
+    if (zone == nullptr) {
+        uPut << "illegal address";
+        while (1);
+    }
     zone->val->OnPageFault(addr);
 }
 

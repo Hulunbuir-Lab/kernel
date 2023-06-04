@@ -3,7 +3,7 @@
 
 void Zone::OnPageFault(u64 vaddr)
 {
-    space->MMUService.AddItem(vaddr, (u64) pageAllocator.AllocPageMem(0), Config);
+    space->MMUService.AddItem(vaddr, (u64) pageAllocator.AllocPageMem(1), Config);
 }
 
 void DirectZone::OnPageFault(u64 vaddr)
