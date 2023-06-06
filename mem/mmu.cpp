@@ -77,9 +77,9 @@ u64 MMU::V2P(u64 vaddr)
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
     if (p3->p == 0) return 0;
 
-    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 13) << 1);
+    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 12));
     if (p4->p == 0) return 0;
-    else return (p4->pa << 12) + getPartical(vaddr, 12, 0);
+    else return (p4->pa << 12) + getPartical(vaddr, 11, 0);
 }
 
 void MMU::SetPGDL()

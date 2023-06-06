@@ -12,8 +12,8 @@ Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), N
     Id = getId();
     space = new MemSpace(0x0, 0xFFFFFFFFFFFF);
     pc = (u64) startAddress;
-    sp = 0x600FF0;
-    space->AddZone(new TNode<Zone>(new Zone(0x500000, 0x700000, ZoneConfig{1, 3, 0, 1, 0, 0})));
+    sp = 0xFF000FFC;
+    space->AddZone(new TNode<Zone>(new Zone(0xFF000000, 0xFFFFFFFF, ZoneConfig{1, 3, 0, 1, 0, 0})));
 }
 
 Process::~Process() {

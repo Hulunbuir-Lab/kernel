@@ -50,6 +50,7 @@ inline void invokeInit() {
 inline void initMem() {
     __csrwr_d(0x13E4D52C, 0x1C);
     __csrwr_d(0x267, 0x1D);
+    __csrwr_d(0xC, 0x1E);
 }
 
 inline void initException() {
@@ -68,7 +69,7 @@ extern "C" void KernelMain() {
 
     fat32_mount();
     file *f = new file;
-    open("brk", f);
+    open("open", f);
     char *p = new char [f->size];
     read(f, (u8 *) p ,f->size);
 

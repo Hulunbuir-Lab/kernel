@@ -33,16 +33,30 @@ void Exception::HandleDefaultException() {
             }
             break;
         case 0xB:
-            uPut << "Syscall\n";
-            while (1);
+            extern u64 ContextReg[30];
+            switch (ContextReg[9]) {
+                case 64:
+                    if (ContextReg[2] == 1 || ContextReg[2] == 2) {
+                        char* addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                        for (u64 i = 0; i < ContextReg[4]; ++i) {
+                            uPut << *(addr + i);
+                        }
+                        __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
+                    }
+                    break;
+                default:
+                    uPut << "Unsupported Syscall " << ContextReg[9] << '\n';
+                    uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
+                    while (1);
+                    break;
+            }
             break;
         case 0x1:
         case 0x2:
             uPut << "Page Invalid\n";
             uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
             uPut << "BADV: " << (void*) __csrrd_d(0x7) << '\n';
-            __csrwr_d(__csrrd_d(0x7), 0x11);
-            uPut << "original TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
+            uPut << "TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
             __asm__(
                 "tlbsrch\n"
                 "tlbrd"
