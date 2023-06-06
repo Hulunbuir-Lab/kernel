@@ -34,15 +34,25 @@ void Exception::HandleDefaultException() {
             break;
         case 0xB:
             extern u64 ContextReg[30];
+            char* addr;
             switch (ContextReg[9]) {
+                //write
                 case 64:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
                     if (ContextReg[2] == 1 || ContextReg[2] == 2) {
-                        char* addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
                         for (u64 i = 0; i < ContextReg[4]; ++i) {
                             uPut << *(addr + i);
                         }
-                        __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
+                    } else {
+                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
                     }
+                    __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
+                    break;
+                //openat
+                case 56:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Open(addr);
+                    __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
                     break;
                 default:
                     uPut << "Unsupported Syscall " << ContextReg[9] << '\n';
