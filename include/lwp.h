@@ -77,6 +77,7 @@ public:
     Jiffies Deadline;
     void Resume();
     void Pause();
+    void SetArg(void* argc, u64 argv);
     MemSpace *GetSpace() {
         return space;
     }

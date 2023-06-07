@@ -36,6 +36,22 @@ void Exception::HandleDefaultException() {
             extern u64 ContextReg[30];
             char* addr;
             switch (ContextReg[9]) {
+                //openat
+                case 56:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Open(addr);
+                    break;
+                //close
+                case 57:
+                    processController.CurrentProcess->SdFileTable.Close(ContextReg[2]);
+                    break;
+                //read
+                case 63:
+                    if (ContextReg[2] != 0) {
+                        addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
+                    }
+                    break;
                 //write
                 case 64:
                     addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
@@ -46,13 +62,10 @@ void Exception::HandleDefaultException() {
                     } else {
                         processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
                     }
-                    __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
                     break;
-                //openat
-                case 56:
-                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
-                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Open(addr);
-                    __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
+                //execve
+                case 221:
+
                     break;
                 default:
                     uPut << "Unsupported Syscall " << ContextReg[9] << '\n';
@@ -60,6 +73,7 @@ void Exception::HandleDefaultException() {
                     while (1);
                     break;
             }
+            __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
             break;
         case 0x1:
         case 0x2:

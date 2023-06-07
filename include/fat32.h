@@ -1,4 +1,12 @@
-#include <types.h>
+#ifndef FAT32_H_INCLUDED
+#define FAT32_H_INCLUDED
+
+#include <util.h>
+#include <string.h>
+#include <sdcard.h>
+#include <uart.h>
+#include <mem.h>
+
 struct superBlock{
     unsigned short bytesPerSector;
     unsigned char sectorPerCluster;
@@ -65,35 +73,35 @@ struct  file{
 };
 #define OPENFILENUM 64
 typedef struct _diritem_date_t {
-    uint16 day : 5;                  // 日
-    uint16 month : 4;                // 月
-    uint16 year_from_1980 : 7;       // 年
+    u16 day : 5;                  // 日
+    u16 month : 4;                // 月
+    u16 year_from_1980 : 7;       // 年
 } diritem_date_t;
 
 /**
  * FAT目录项的时间类型
  */
 typedef struct _diritem_time_t {
-    uint16 second_2 : 5;             // 2秒
-    uint16 minute : 6;               // 分
-    uint16 hour : 5;                 // 时
+    u16 second_2 : 5;             // 2秒
+    u16 minute : 6;               // 分
+    u16 hour : 5;                 // 时
 } diritem_time_t;
 struct dirEntry{
-    uint8 DIR_Name[8];                   // 文件名
-    uint8 DIR_ExtName[3];                // 扩展名
-    uint8 DIR_Attr;                      // 属性
-    uint8 DIR_NTRes;
-    uint8 DIR_CrtTimeTeenth;             // 创建时间的毫秒
+    u8 DIR_Name[8];                   // 文件名
+    u8 DIR_ExtName[3];                // 扩展名
+    u8 DIR_Attr;                      // 属性
+    u8 DIR_NTRes;
+    u8 DIR_CrtTimeTeenth;             // 创建时间的毫秒
     diritem_time_t DIR_CrtTime;         // 创建时间
     diritem_date_t DIR_CrtDate;         // 创建日期
     diritem_date_t DIR_LastAccDate;     // 最后访问日期
-    uint16 DIR_FstClusHI;                // 簇号高16位
+    u16 DIR_FstClusHI;                // 簇号高16位
     diritem_time_t DIR_WrtTime;         // 修改时间
     diritem_date_t DIR_WrtDate;         // 修改时期
-    uint16 DIR_FstClusL0;                // 簇号低16位
-    uint32 DIR_FileSize; 
+    u16 DIR_FstClusL0;                // 簇号低16位
+    u32 DIR_FileSize;
 };
-//uint32 fatTable[];
+//u32 fatTable[];
 void fat32_mount();
 void fstest0();
 #define is_path_sep(ch)         (((ch) == '\\') || ((ch == '/')))       // 判断是否是文件名分隔符
@@ -102,3 +110,5 @@ void fstest0();
 
 int open(const char *path,struct file *file0);
 int read(struct file *file0, unsigned char *bufDst, int count);
+
+#endif // FAT32_H_INCLUDED

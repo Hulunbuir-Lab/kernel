@@ -40,6 +40,11 @@ void Process::Pause() {
     pc = __csrrd_d(0x6);
 }
 
+void Process::SetArg(void* argc, u64 argv) {
+    reg[2] = (u64) argc;
+    reg[3] = argv;
+}
+
 void ProcessController::StopCurrentProcess() {
     if (CurrentProcess == nullptr) return;
     CurrentProcess->Pause();
