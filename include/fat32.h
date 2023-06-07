@@ -110,5 +110,6 @@ void fstest0();
 
 int open(const char *path,struct file *file0);
 int read(struct file *file0, unsigned char *bufDst, int count);
+int write(struct file *file0, unsigned char *bufSrc, int count);
 
 #endif // FAT32_H_INCLUDED

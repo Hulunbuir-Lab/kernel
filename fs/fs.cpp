@@ -3,7 +3,6 @@
 #include <sdcard.h>
 #include <util.h>
 #include <uart.h>
-#include <types.h>
 #include <mem.h>
 struct file fileTable[OPENFILENUM];
 unsigned int rootCluster;
@@ -70,8 +69,8 @@ static xfat_err_t to_sfn(char* dest_name, const char* my_name) {
  * @param name
  * @return
  */
-static uint8 get_sfn_case_cfg(const char * sfn_name) {
-    uint8 case_cfg = 0;
+static u8 get_sfn_case_cfg(const char * sfn_name) {
+    u8 case_cfg = 0;
 
     int name_len;
     const char * src_name = sfn_name;
@@ -120,7 +119,7 @@ static uint8 get_sfn_case_cfg(const char * sfn_name) {
  * @param my_name 应用可读的文件名格式
  * @return
  */
-static uint8 is_filename_match(const char *name_in_dir, const char *to_find_name) {
+static u8 is_filename_match(const char *name_in_dir, const char *to_find_name) {
     char temp_name[SFN_LEN];
 
     // FAT文件名的比较检测等，全部转换成大写比较
@@ -158,7 +157,7 @@ const char * get_child_path(const char *dir_path) {
 
     return (*c == '\0') ? (const char *)0 : c + 1;
 }
-void printStr(uint8 *str0){
+void printStr(u8 *str0){
     int i=0;
     while(str0[i]){
         uPut<<(char )str0[i];
@@ -191,7 +190,7 @@ void fat32_mount(){
     SUPERBLOCK.fatNum = *(unsigned char *)(buf+fatNumIndex);
     SUPERBLOCK.sectorPerFat = *(unsigned int *)(buf + sectorPerFatIndex);
     //no complete, bug
-    SUPERBLOCK.fatClusterNum = SUPERBLOCK.sectorPerFat/SUPERBLOCK.sectorPerCluster;
+    //SUPERBLOCK.fatClusterNum = SUPERBLOCK.sectorPerFat/SUPERBLOCK.sectorPerCluster;
     rootCluster = *(unsigned int *)(buf + rootClusterIndex);
     int level =  0;
     // cal fat size
@@ -201,7 +200,7 @@ void fat32_mount(){
     int pageSize = 0x1000;
     fatTable = (unsigned int *)pageAllocator.AllocPageMem(level);
     for(int i=0; i<SUPERBLOCK.sectorPerFat; i++)
-        sdcard.ReadBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(uint32)*i));
+        sdcard.ReadBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(u32)*i));
     for(;pageSize >= SUPERBLOCK.sectorPerCluster*0x200; pageSize*=2)
         ;
     for(int i=0; i<OPENFILENUM; i++){
@@ -214,22 +213,22 @@ void fat32_mount(){
 u32 getDirEntryCluster(struct dirEntry *dirEntry0){
     return (dirEntry0->DIR_FstClusHI << 16) + dirEntry0->DIR_FstClusL0;
 }
-int is_cluster_valid(uint32 cluster) {
+int is_cluster_valid(u32 cluster) {
     cluster &= 0x0FFFFFFF;
     return (cluster < 0x0FFFFFF0) && (cluster >= 0x2);     // 值是否正确
 }
-uint32 clusterFirstSector(uint32 clusterNum){
-    uint32 dataStartSector = SUPERBLOCK.reserverSector + SUPERBLOCK.fatNum * SUPERBLOCK.sectorPerFat;
-    uint32 sectorNum = dataStartSector + (clusterNum-2) *SUPERBLOCK.sectorPerCluster;
+u32 clusterFirstSector(u32 clusterNum){
+    u32 dataStartSector = SUPERBLOCK.reserverSector + SUPERBLOCK.fatNum * SUPERBLOCK.sectorPerFat;
+    u32 sectorNum = dataStartSector + (clusterNum-2) *SUPERBLOCK.sectorPerCluster;
     return sectorNum;
 }
-uint32 getNextCluster(uint32 curClusrerNum){
+u32 getNextCluster(u32 curClusrerNum){
     return fatTable[curClusrerNum];
 }
 char bufPublic[512];
 int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, struct dirEntry *dirEntry0){
-    uint32 currCluster = *parentCluster;
-    uint32 initialSector = 0;
+    u32 currCluster = *parentCluster;
+    u32 initialSector = 0;
 
     const char *t = curPath;
     int i = 0;
@@ -261,13 +260,13 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
     else
         curPath1 = (char *)curPath;
     //uPut<<"path="<<curPath<<"\n";
-    //printStr((uint8 *)curPath1);
+    //printStr((u8 *)curPath1);
 
     do{
-        uint32 startSector = clusterFirstSector(currCluster);
-        uint32 i;
+        u32 startSector = clusterFirstSector(currCluster);
+        u32 i;
         for(i=0; i<SUPERBLOCK.sectorPerCluster; i++){
-            uint32 j;
+            u32 j;
             memset(bufPublic,0,512);
             ////uPut<<"--------------- i="<<i<<"\n";
             sdcard.ReadBlock((startSector+i)*512,bufPublic);
@@ -297,17 +296,17 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
     }while(is_cluster_valid(currCluster));
     return FS_ERR_EOF;
 }
-void readCluster(uint8 *bufClusrer,uint32 clusterNum){
+void readCluster(u8 *bufClusrer,u32 clusterNum){
     int startSector = clusterFirstSector(clusterNum);
     //uPut<<"startsector="<<startSector<<"\n";
     for(int i=0; i<SUPERBLOCK.sectorPerCluster; i++){
-        sdcard.ReadBlock((startSector+i)*512,(uint8 *)bufClusrer+512*i);
+        sdcard.ReadBlock((startSector+i)*512,(u8 *)bufClusrer+512*i);
     }
 }
-void writeCluster(uint8 *bufClusrer,uint32 clusterNum){
+void writeCluster(u8 *bufClusrer,u32 clusterNum){
     int startSector = clusterFirstSector(clusterNum);
     for(int i=0; i<SUPERBLOCK.sectorPerCluster; i++){
-        sdcard.WriteBlock((startSector+i)*512,(uint8 *)bufClusrer+512*i);
+        sdcard.WriteBlock((startSector+i)*512,(u8 *)bufClusrer+512*i);
     }
 }
 int openSubFile(u32 dirCluster, struct file *file0,const char *path){
@@ -371,9 +370,9 @@ int open(const char *path,struct file *file0){
 }
 
 #define MAXLEN 4*1024*1024
-uint8 bufTemp[MAXLEN];
+u8 bufTemp[MAXLEN];
 int read(struct file *file0, unsigned char *bufDst, int count){
-    uint32 alreadyReaded = 0;
+    u32 alreadyReaded = 0;
     if(file0->pos > file0->size){
         return 0;
     }
@@ -384,7 +383,7 @@ int read(struct file *file0, unsigned char *bufDst, int count){
     int level = 0;
     for(;pageSize>=filesize; level++)
         pageSize*=2;
-    //uint8 *bufTemp = (uint8 *)pageAllocator.AllocPageMem(level);
+    //u8 *bufTemp = (u8 *)pageAllocator.AllocPageMem(level);
     int clusterCount = filesize / (SUPERBLOCK.sectorPerCluster*512);
     clusterCount = (filesize % (SUPERBLOCK.sectorPerCluster*512) == 0)? (clusterCount):(clusterCount+1);
     int cluterNum = file0->start_cluster;
@@ -398,9 +397,9 @@ int read(struct file *file0, unsigned char *bufDst, int count){
     return count;
 }
 #define ENDCLUSTER 0x0FFFFFFF
-int getEmptyCluster(uint32 currentCluster){
-    //uPut<<"currentCluster="<<(uint32 *)currentCluster<<"\n";
-    uint32 i;
+int getEmptyCluster(u32 currentCluster){
+    //uPut<<"currentCluster="<<(u32 *)currentCluster<<"\n";
+    u32 i;
     for(i=0; i<SUPERBLOCK.sectorPerCluster*512/4; i++){
         if(fatTable[i] == 0)
             break;
@@ -419,20 +418,20 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
     if(file0->pos + count > file0->size){
         file0->size = file0->pos +count;
     }
-    uint32 clusterCount = file0->size / (SUPERBLOCK.sectorPerCluster*512);
-    uint32 clusterNum = file0->start_cluster;
+    u32 clusterCount = file0->size / (SUPERBLOCK.sectorPerCluster*512);
+    u32 clusterNum = file0->start_cluster;
     if( file0->size % (SUPERBLOCK.sectorPerCluster*512) != 0)
         clusterCount += 1;
     //uPut<<"clustercount="<<clusterCount<<"\n";
     for(int i=0; i<clusterCount; i++){
-        //uPut<<"clusterNum ="<<(uint32 *)clusterNum << "\n";
+        //uPut<<"clusterNum ="<<(u32 *)clusterNum << "\n";
         if(!is_cluster_valid(clusterNum)){
             //uPut<<"-----------------------------------------------------------------"<<"\n";
             clusterNum =getEmptyCluster(clusterNum);
             if(i==0)
                 file0->start_cluster = clusterNum;
         }
-        //uPut<<"clusterNum ="<<(uint32 *)clusterNum << "\n";
+        //uPut<<"clusterNum ="<<(u32 *)clusterNum << "\n";
         readCluster(bufTemp+i*SUPERBLOCK.sectorPerCluster*512,clusterNum);
         clusterNum = fatTable[clusterNum];
     }
@@ -442,10 +441,10 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
         clusterNum = fatTable[clusterNum];
     }
     for(int i=0; i<SUPERBLOCK.sectorPerFat; i++)
-        sdcard.WriteBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(uint32)*i));
+        sdcard.WriteBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(u32)*i));
     memset(bufTemp,0,MAXLEN);
     readCluster(bufTemp,file0->dir_cluster);
-    struct dirEntry* dirEntry0 = (struct dirEntry*)((uint8 *)bufTemp+file0->dir_cluster_offset);
+    struct dirEntry* dirEntry0 = (struct dirEntry*)((u8 *)bufTemp+file0->dir_cluster_offset);
     //uPut<<"file0->dir_cluster="<<file0->dir_cluster<<" file0->dir_cluster_offset="<<file0->dir_cluster_offset<<"\n";
     //printStr(dirEntry0->DIR_Name);
     dirEntry0->DIR_FileSize = file0->size;
@@ -455,19 +454,19 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
     //uPut<<"clucount="<<clusterCount<<"  "<<"file0->start_cluster = "<<file0->start_cluster<<"\n";
     return count;
 }
-// xfat_err_t createSubFile(uint8 isDir, uint32 parentCluster,const char *childName, uint32 fileCluster){
+// xfat_err_t createSubFile(u8 isDir, u32 parentCluster,const char *childName, u32 fileCluster){
 //     while(1){
 //         struct dirEntry *entry0 = NULL;
         
 //     }
 // }
-// xfat_err_t createEmptyDir(uint32 parentCluster, uint32 *newCluster, const char *name){
+// xfat_err_t createEmptyDir(u32 parentCluster, u32 *newCluster, const char *name){
 
 // }
 // int create(const char *path,struct file *file0){
 
 // }
-uint8 buf1[4096*4];
+u8 buf1[4096*4];
 void fstest0(){
     struct file file0;
     memset(&file0,0,sizeof(struct file));

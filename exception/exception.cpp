@@ -49,7 +49,7 @@ void Exception::HandleDefaultException() {
                 case 63:
                     if (ContextReg[2] != 0) {
                         addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
-                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
+                        ContextReg[2] = processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
                     }
                     break;
                 //write
@@ -59,13 +59,16 @@ void Exception::HandleDefaultException() {
                         for (u64 i = 0; i < ContextReg[4]; ++i) {
                             uPut << *(addr + i);
                         }
+                        ContextReg[2] = ContextReg[4];
                     } else {
-                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
+                        ContextReg[2] = processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
                     }
                     break;
-                //execve
-                case 221:
-
+                //exit
+                case 93:
+                    delete processController.CurrentProcess;
+                    processController.CurrentProcess = nullptr;
+                    processController.HandleSchedule();
                     break;
                 default:
                     uPut << "Unsupported Syscall " << ContextReg[9] << '\n';
@@ -102,7 +105,9 @@ void Exception::HandleDefaultException() {
 
 void Exception::HandleTLBException() {
     if (!processController.CurrentProcess) {
-        uPut << (void*)__csrrd_d(0x89) << '\n' << (void*)__csrrd_d(0x90) << '\n' << "Kernel Panic" << '\n';
+        uPut << "Kernel Panic" << '\n';
+        uPut << "TLBRBADV: " << (void*) __csrrd_d(0x89) << '\n';
+        uPut << "TLBRERA: " << (void*) __csrrd_d(0x8a) << '\n';
         while (1);
     }
 
@@ -113,7 +118,9 @@ void Exception::HandleTLBException() {
         else return 2;
     });
     if (zone == nullptr) {
-        uPut << "illegal address";
+        uPut << "illegal address\n";
+        uPut << "TLBRBADV: " << (void*) addr << '\n';
+        uPut << "TLBRERA: " << (void*) __csrrd_d(0x8a) << '\n';
         while (1);
     }
     zone->val->OnPageFault(addr);

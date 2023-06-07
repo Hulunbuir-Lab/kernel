@@ -25,10 +25,12 @@ class Tree {
 	friend class ProcessController;
 	TNode<TVal>* root;
 	void splay(TNode<TVal>* t, TNode<TVal>* p);
+	void deleteNode(TNode<TVal> *node);
 public:
 	TNode<TVal>* find(std::function<u8 (TVal *)> check);
 	void insert(TNode<TVal>* node, std::function<bool (TVal *)> check);
 	void ListTree();
+	~Tree();
 };
 
 
@@ -112,5 +114,16 @@ void Tree<TVal>::ListTree() {
 	root->ListNode();
 }
 
+template<typename TVal>
+void Tree<TVal>::deleteNode(TNode<TVal>* node) {
+	if (node->child[0] != nullptr) deleteNode(node->child[0]);
+	if (node->child[1] != nullptr) deleteNode(node->child[1]);
+	delete node;
+}
+
+template<typename TVal>
+Tree<TVal>::~Tree() {
+	deleteNode(root);
+}
 
 #endif

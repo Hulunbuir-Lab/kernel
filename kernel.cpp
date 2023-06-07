@@ -69,12 +69,12 @@ extern "C" void KernelMain() {
 
     fat32_mount();
     file *f = new file;
-    open("open", f);
+    open("write", f);
     char *p = new char [f->size];
     read(f, (u8 *) p ,f->size);
 
-    ELFProgram brk(p);
-    brk.CreateProcess();
+    ELFProgram program(p);
+    program.CreateProcess();
 
     SysTimer.TimerOn();
     extern void StartProcess();

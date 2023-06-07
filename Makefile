@@ -7,10 +7,10 @@ SOURCES = $(wildcard kernel.cpp \
 		     uart/*.cpp \
 		     exception/*.cpp \
 		     timer/*.cpp \
-		     mem/*.cpp \
 		     lwp/*.cpp \
 		     sdcard/*.cpp \
 		     fs/*.cpp \
+		     mem/*.cpp \
 		     string/*.cpp \
 	   )
 

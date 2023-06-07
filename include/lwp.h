@@ -10,11 +10,12 @@ const u16 prioRatios[8] = { 100, 200, 300, 400, 500, 600, 700, 800 };
 
 class FileTable {
     u64 processFd = 2;
-    file* sdFile[100];
+    file sdFile[100];
 public:
     u64 Open(const char *filePath);
     void Close(u64 fd);
-    void Read(u64 fd, u8* buf, u64 size);
+    int Read(u64 fd, u8* buf, u64 size);
+    int Write(u64 fd, u8* buf, u64 size);
 };
 
 struct ELFHeader {

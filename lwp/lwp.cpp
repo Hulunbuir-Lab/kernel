@@ -17,9 +17,7 @@ Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), N
 }
 
 Process::~Process() {
-    __csrwr_d(pc, 0x6);
-    __csrwr_d(Id, 0x18);
-    GetSpace()->MMUService.SetPGDL();
+    delete space;
 }
 
 void Process::Resume() {
@@ -56,9 +54,10 @@ void ProcessController::StopCurrentProcess() {
 }
 
 void ProcessController::HandleSchedule() {
-    if (!(headBitMap & (0x11111111u << (CurrentProcess->Priority)))) return;
+    if (CurrentProcess != nullptr && (!(headBitMap & (0x11111111u << (CurrentProcess->Priority))))) return;
     StopCurrentProcess();
-    for (u8 i = 7; i >= 0; --i) {
+    if (headBitMap)
+    for (int i = 7; i >= 0; --i) {
         if (headBitMap & (1 << i)) {
             Process *processToExec = bfsHead[i], *processToExecFrom = nullptr;
             for (Process *pt = bfsHead[i], *from = nullptr; pt != nullptr; from = pt, pt = pt->Next) {
@@ -79,6 +78,10 @@ void ProcessController::HandleSchedule() {
             CurrentProcess->Resume();
             break;
         }
+    }
+    if (CurrentProcess == nullptr) {
+        uPut << "No Available Process\n";
+        while (1);
     }
 }
 
