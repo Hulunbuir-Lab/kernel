@@ -12,7 +12,8 @@ Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), N
     Id = getId();
     space = new MemSpace(0x0, 0xFFFFFFFFFFFF);
     pc = (u64) startAddress;
-    sp = 0x6000;
+    sp = 0xFF000FFC;
+    space->AddZone(new TNode<Zone>(new Zone(0xFF000000, 0xFFFFFFFF, ZoneConfig{1, 3, 0, 1, 0, 0})));
 }
 
 Process::~Process() {
@@ -37,6 +38,11 @@ void Process::Pause() {
     }
     sp = __csrrd_d(0x30);
     pc = __csrrd_d(0x6);
+}
+
+void Process::SetArg(void* argc, u64 argv) {
+    reg[2] = (u64) argc;
+    reg[3] = argv;
 }
 
 void ProcessController::StopCurrentProcess() {

@@ -46,7 +46,10 @@ void SlabAllocator::ListZone()
     }
 }
 
-SlabArea::SlabArea(): used(false){}
+SlabArea::SlabArea(): used(false){
+    Next = nullptr;
+    pageMem = nullptr;
+}
 
 void * SlabArea::Malloc(u16 size) {
     if (size > 4096 - sizeof(SlabArea)) return nullptr;
@@ -87,7 +90,7 @@ void * SlabArea::Malloc(u16 size) {
 }
 
 bool SlabArea::Free(void* addr){
-    if (((u64) addr & 0xFFFFFFFFFFFFF000) != (u64) pageMem) return false;
+    if (used == 0 || ((u64) addr & 0xFFFFFFFFFFFFF000) != (u64) pageMem) return false;
     SlabNode *node = usedMem;
     SlabNode *p = nullptr;
     while (node != nullptr) {

@@ -33,18 +33,63 @@ void Exception::HandleDefaultException() {
             }
             break;
         case 0xB:
-            {
-                u16 code = getPartical(__csrrd_d(0x8), 14, 0);
-                if (code == 0) {
-                    uPut << 'A';
-                    for (u32 i = 0; i < 3000000; ++i);
-                }
-                else if (code == 1) {
-                    uPut << 'B';
-                    for (u32 i = 0; i < 3000000; ++i);
-                }
+            extern u64 ContextReg[30];
+            char* addr;
+            switch (ContextReg[9]) {
+                //openat
+                case 56:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Open(addr);
+                    break;
+                //close
+                case 57:
+                    processController.CurrentProcess->SdFileTable.Close(ContextReg[2]);
+                    break;
+                //read
+                case 63:
+                    if (ContextReg[2] != 0) {
+                        addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
+                    }
+                    break;
+                //write
+                case 64:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
+                    if (ContextReg[2] == 1 || ContextReg[2] == 2) {
+                        for (u64 i = 0; i < ContextReg[4]; ++i) {
+                            uPut << *(addr + i);
+                        }
+                    } else {
+                        processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
+                    }
+                    break;
+                //execve
+                case 221:
+
+                    break;
+                default:
+                    uPut << "Unsupported Syscall " << ContextReg[9] << '\n';
+                    uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
+                    while (1);
+                    break;
             }
+            __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
             break;
+        case 0x1:
+        case 0x2:
+            uPut << "Page Invalid\n";
+            uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
+            uPut << "BADV: " << (void*) __csrrd_d(0x7) << '\n';
+            uPut << "TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
+            __asm__(
+                "tlbsrch\n"
+                "tlbrd"
+            );
+            uPut << "TLBIDX: " << (void*) __csrrd_d(0x10) << '\n';
+            uPut << "TLBEHI: " << (void*) __csrrd_d(0x11) << '\n';
+            uPut << "TLBELO0: " << (void*) __csrrd_d(0x12) << '\n';
+            uPut << "TLBELO1: " << (void*) __csrrd_d(0x13) << '\n';
+            while (1);
         default:
             uPut << "Exception\n";
             uPut << "ESTATE: " << (void*) estate << '\n';
@@ -67,6 +112,10 @@ void Exception::HandleTLBException() {
         else if (addr < t->VStart) return 0;
         else return 2;
     });
+    if (zone == nullptr) {
+        uPut << "illegal address";
+        while (1);
+    }
     zone->val->OnPageFault(addr);
 }
 
