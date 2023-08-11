@@ -1,5 +1,5 @@
 #include <lwp.h>
-
+#include <string.h>
 extern u64 ContextReg[30];
 
 static u16 t = 0;
@@ -14,6 +14,7 @@ Process::Process(u8 priority, u8 nice, void* startAddress):Priority(priority), N
     pc = (u64) startAddress;
     sp = 0xFF000FFC;
     space->AddZone(new TNode<Zone>(new Zone(0xFF000000, 0xFFFFFFFF, ZoneConfig{1, 3, 0, 1, 0, 0})));
+    pwd[0] = '/';
 }
 
 Process::~Process() {
