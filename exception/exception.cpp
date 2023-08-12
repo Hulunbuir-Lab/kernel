@@ -36,6 +36,11 @@ void Exception::HandleDefaultException() {
             extern u64 ContextReg[30];
             char* addr;
             switch (ContextReg[9]) {
+                //chdir
+                case 49:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[2]);
+                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Chdir((u8*)addr);
+                    break;
                 //openat
                 case 56:
                     addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[3]);
@@ -64,6 +69,15 @@ void Exception::HandleDefaultException() {
                         ContextReg[2] = processController.CurrentProcess->SdFileTable.Read(ContextReg[2], (u8*) addr, ContextReg[4]);
                     }
                     break;
+                //getcwd
+                case 17:
+                    addr = (char*)processController.CurrentProcess->GetSpace()->MMUService.V2P(ContextReg[2]);
+                    ContextReg[2] = processController.CurrentProcess->SdFileTable.Getcwd((u8*)addr,ContextReg[3]);
+                    break;
+                //fork
+                // case 65:
+                //     addr = (char )
+                //     break;
                 //exit
                 case 93:
                     delete processController.CurrentProcess;

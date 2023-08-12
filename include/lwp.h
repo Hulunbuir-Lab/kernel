@@ -16,6 +16,8 @@ public:
     void Close(u64 fd);
     int Read(u64 fd, u8* buf, u64 size);
     int Write(u64 fd, u8* buf, u64 size);
+    int Getcwd(u8* buf, u64 size);
+    int Chdir(u8*buf);
 };
 
 struct ELFHeader {
@@ -62,8 +64,8 @@ public:
 
 class Process {
     MemSpace *space;
-    TNode<Zone> *text;
-    TNode<Zone> *stack;
+    // TNode<Zone> *text;
+    // TNode<Zone> *stack;
     u64 reg[30];
     u64 sp;
     u64 pc;
@@ -75,6 +77,7 @@ public:
     Process *Next;
     u8 Priority;
     u8 Nice;
+    u8 pwd[128];
     Jiffies Deadline;
     void Resume();
     void Pause();

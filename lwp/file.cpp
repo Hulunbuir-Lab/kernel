@@ -25,5 +25,11 @@ int FileTable::Write(u64 fd, u8* buf, u64 size) {
 
 int FileTable::Getcwd(u8* buf, u64 size) {
     memcpy(buf,processController.CurrentProcess->pwd,128);
-    return 10;
+    //int *ret = (int *)buf; 
+    return 100;
+}
+
+int FileTable::Chdir(u8* buf) {
+    memcpy(processController.CurrentProcess->pwd,buf,sizeof(buf));
+    return 0;
 }
