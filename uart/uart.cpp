@@ -26,7 +26,7 @@ void UART::UARTPutchar(char c) {
 
 UART & UART::operator << (const char* x)
 {
-    u32 n = kStrlen(x);
+    u32 n = KernelUtil::Strlen(x);
     for (int i = 0; i < n; ++i) {
         UARTPutchar(x[i]);
     }

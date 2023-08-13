@@ -16,7 +16,7 @@ static xfat_err_t to_sfn(char* dest_name, const char* my_name) {
     const char * p;
     int ext_existed;
 
-    memset(dest, ' ', SFN_LEN);
+    KernelUtil::Memset(dest, ' ', SFN_LEN);
 
     // 跳过开头的分隔符
     while (is_path_sep(*my_name)) {
@@ -50,14 +50,14 @@ static xfat_err_t to_sfn(char* dest_name, const char* my_name) {
                 continue;
             }
             else if (p < ext_dot) {
-                *dest++ = toupper(*p++);
+                *dest++ = KernelUtil::ToUpper(*p++);
             }
             else {
-                *dest++ = toupper(*p++);
+                *dest++ = KernelUtil::ToUpper(*p++);
             }
         }
         else {
-            *dest++ = toupper(*p++);
+            *dest++ = KernelUtil::ToUpper(*p++);
         }
     }
     return FS_ERR_OK;
@@ -101,12 +101,12 @@ static u8 get_sfn_case_cfg(const char * sfn_name) {
     for (p = src_name; p < src_name + name_len; p++) {
         if (ext_existed) {
             if (p < ext_dot) { // 文件名主体部分大小写判断
-                case_cfg |= islower(*p) ? DIRITEM_NTRES_BODY_LOWER : 0;
+                case_cfg |= KernelUtil::IsLower(*p) ? DIRITEM_NTRES_BODY_LOWER : 0;
             } else if (p > ext_dot) {
-                case_cfg |= islower(*p) ? DIRITEM_NTRES_EXT_LOWER : 0;
+                case_cfg |= KernelUtil::IsLower(*p) ? DIRITEM_NTRES_EXT_LOWER : 0;
             }
         } else {
-            case_cfg |= islower(*p) ? DIRITEM_NTRES_BODY_LOWER : 0;
+            case_cfg |= KernelUtil::IsLower(*p) ? DIRITEM_NTRES_BODY_LOWER : 0;
         }
     }
 
@@ -126,7 +126,7 @@ static u8 is_filename_match(const char *name_in_dir, const char *to_find_name) {
     // 根据目录的大小写配置，将其转换成8+3名称，再进行逐字节比较
     // 但实际显示时，会根据diritem->NTRes进行大小写转换
     to_sfn(temp_name, to_find_name);
-    return memcmp(temp_name, name_in_dir, SFN_LEN) == 0;
+    return KernelUtil::Memcmp(temp_name, name_in_dir, SFN_LEN) == 0;
 }
 static const char * skip_first_path_sep (const char * path) {
     const char * c = path;
@@ -182,7 +182,7 @@ static xfile_type_t get_file_type(const dirEntry *diritem) {
 int clusterLevel = 0;
 void fat32_mount(){
     char buf[512];
-    memset(buf,0,512);
+    KernelUtil::Memset(buf,0,512);
     sdcard.ReadBlock(0,buf);
     SUPERBLOCK.bytesPerSector = *(unsigned short *)(buf + bytesPerSectorInex);
     SUPERBLOCK.sectorPerCluster = *(unsigned char *)(buf + sectorPerClusterIndex);
@@ -234,7 +234,7 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
     int i = 0;
     char curPath0[13];
     char *curPath1;
-    memset(curPath0,0,13);
+    KernelUtil::Memset(curPath0,0,13);
     while(t[i] !='\0' && i<=8){
         if(i>0 && t[i]=='.')
             break;
@@ -242,7 +242,7 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
     }
     //uPut<<"i="<<i<<"\n";
     if(i>8){
-        memcpy(curPath0,curPath,6);
+        KernelUtil::Memcpy(curPath0,curPath,6);
         curPath0[6] = '~', curPath0[7] = '1';
         int dotpos = -1;
         for(int i=8; curPath[i] != '\0'; i++){
@@ -253,7 +253,7 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
         }
         if(dotpos != -1){
             curPath0[8] = '.';
-            memcpy(curPath0+9,curPath+dotpos+1,3);
+            KernelUtil::Memcpy(curPath0+9,curPath+dotpos+1,3);
         }
         curPath1 = curPath0;
     }
@@ -267,7 +267,7 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
         u32 i;
         for(i=0; i<SUPERBLOCK.sectorPerCluster; i++){
             u32 j;
-            memset(bufPublic,0,512);
+            KernelUtil::Memset(bufPublic,0,512);
             ////uPut<<"--------------- i="<<i<<"\n";
             sdcard.ReadBlock((startSector+i)*512,bufPublic);
             for(j=0; j<512/sizeof(struct dirEntry); j++){
@@ -286,7 +286,7 @@ int findEntry(u32 *parentCluster, u32 *parentClusterOffet, const char *curPath, 
                     *parentCluster = currCluster;
                     *parentClusterOffet = i*512+j*sizeof(struct dirEntry);
                     //uPut<<"walkEntry->size="<<walkEntry->DIR_FileSize<<"\n";
-                    memcpy(dirEntry0,walkEntry,sizeof(struct dirEntry));
+                    KernelUtil::Memcpy(dirEntry0,walkEntry,sizeof(struct dirEntry));
                     return FS_ERR_OK;
                 }
             }
@@ -359,9 +359,9 @@ int open(const char *path,struct file *file0){
 
         // 根目录不存在上级目录
         // 若含有.，直接过滤掉路径
-        if (memcmp(path, "..", 2) == 0) {
+        if (KernelUtil::Memcmp(path, "..", 2) == 0) {
             return -1;
-        } else if (memcmp(path, ".", 1) == 0) {
+        } else if (KernelUtil::Memcmp(path, ".", 1) == 0) {
             path++;
         }
     }
@@ -388,12 +388,12 @@ int read(struct file *file0, unsigned char *bufDst, int count){
     clusterCount = (filesize % (SUPERBLOCK.sectorPerCluster*512) == 0)? (clusterCount):(clusterCount+1);
     int cluterNum = file0->start_cluster;
     //uPut<<"clustercount="<<clusterCount<<"\n";
-    memset(bufTemp,0,MAXLEN);
+    KernelUtil::Memset(bufTemp,0,MAXLEN);
     for(int i=0; i<clusterCount && is_cluster_valid(cluterNum); i++){
         readCluster(bufTemp+i*SUPERBLOCK.sectorPerCluster*512,cluterNum);
         cluterNum = fatTable[cluterNum];
     }
-    memcpy(bufDst,bufTemp+file0->pos,count);
+    KernelUtil::Memcpy(bufDst,bufTemp+file0->pos,count);
     return count;
 }
 #define ENDCLUSTER 0x0FFFFFFF
@@ -412,7 +412,7 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
     if(file0->pos > file0->size){
         return 0;
     }
-    memset(bufTemp,0,MAXLEN);
+    KernelUtil::Memset(bufTemp,0,MAXLEN);
     if(file0->pos + count > file0->size)
         file0->size += file0->pos; 
     if(file0->pos + count > file0->size){
@@ -435,14 +435,14 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
         readCluster(bufTemp+i*SUPERBLOCK.sectorPerCluster*512,clusterNum);
         clusterNum = fatTable[clusterNum];
     }
-    memcpy(bufTemp+file0->pos,bufSrc,count);
+    KernelUtil::Memcpy(bufTemp+file0->pos,bufSrc,count);
     for(int i=0,clusterNum = file0->start_cluster; i<clusterCount; i++){
         writeCluster(bufTemp+i*SUPERBLOCK.sectorPerCluster*512,clusterNum);
         clusterNum = fatTable[clusterNum];
     }
     for(int i=0; i<SUPERBLOCK.sectorPerFat; i++)
         sdcard.WriteBlock((SUPERBLOCK.reserverSector+i)*512,(void *)(fatTable+512/sizeof(u32)*i));
-    memset(bufTemp,0,MAXLEN);
+    KernelUtil::Memset(bufTemp,0,MAXLEN);
     readCluster(bufTemp,file0->dir_cluster);
     struct dirEntry* dirEntry0 = (struct dirEntry*)((u8 *)bufTemp+file0->dir_cluster_offset);
     //uPut<<"file0->dir_cluster="<<file0->dir_cluster<<" file0->dir_cluster_offset="<<file0->dir_cluster_offset<<"\n";
@@ -469,16 +469,16 @@ int write(struct file *file0, unsigned char *bufSrc, int count){
 u8 buf1[4096*4];
 void fstest0(){
     struct file file0;
-    memset(&file0,0,sizeof(struct file));
+    KernelUtil::Memset(&file0,0,sizeof(struct file));
     //uPut<<file0.size<<"\n";
     //uPut<<"start0"<<"\n";
     open("/wrt1",&file0);
     //uPut<<"finish0"<<"\n";
     //uPut<<file0.size<<"\n";
-    memset(buf1,0,4096*4);
+    KernelUtil::Memset(buf1,0,4096*4);
     read(&file0,buf1,15000);
     printStr(buf1);
-    //memcpy(buf1,"test write666",sizeof("test write666"));
+    //KernelUtil::Memcpy(buf1,"test write666",sizeof("test write666"));
     //write(&file0,buf1,sizeof("test write666"));
 
 }

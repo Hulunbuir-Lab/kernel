@@ -8,20 +8,33 @@ using u32 = unsigned int;
 using u16 = unsigned short;
 using u8 = unsigned char;
 
-template <class T>
-void kSwap(T & a, T & b);
+namespace KernelUtil {
+    template <class T>
+    void Swap(T & a, T & b);
 
-u32 kStrlen(const char* s);
+    u32 Strlen(const char* s);
 
-template <class T>
-inline T kMax(T a, T b) {
-    return a > b ? a : b;
-}
+    template <class T>
+    inline T Max(T a, T b) {
+        return a > b ? a : b;
+    }
 
-template <class T>
-inline T kMin(T a, T b) {
-    return a < b ? a : b;
-}
+    template <class T>
+    inline T Min(T a, T b) {
+        return a < b ? a : b;
+    }
+    int Memcmp(const void*, const void*, u32);
+    void* Memmove(void*, const void*, u32);
+    void* Memset(void*, int, u32);
+    char* Safestrcpy(char*, const char*, int);
+    int Strncmp(const char*, const char*, u32);
+    char* Strncpy(char*, const char*, int);
+    void* Memcpy(void *dst, const void *src, u32 n);
+    char* Strchr(const char* str, char ch);
+    char ToUpper(char c);
+    int IsLower(int c);
+
+};
 
 u64 getCPUCFG(u64 input);
 
