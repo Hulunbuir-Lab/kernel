@@ -6,7 +6,7 @@
 #include <tree.h>
 #include <larchintrin.h>
 
-#define PAGE_GROUP_SIZE_BIT 16
+#define PAGE_GROUP_SIZE_BIT 12
 #define PAGE_SIZE_BIT 12
 #define PAGE_SIZE (1 << PAGE_SIZE_BIT)
 #define PAGEINFO_SIZE_BIT 5
@@ -93,15 +93,15 @@ class PageAllocator {
     Page *pageInfo;
     u64 pageAreaStart;
 	Page* buddyHeadList[PAGE_GROUP_SIZE_BIT];
-	Page* getBuddyPage(Page *t) {
-      return (Page *)((u64)t ^ (1 << (t->SizeBit + PAGEINFO_SIZE_BIT)));
-    }
     void setupPage(Page* t, u8 sizeBit) {
       t->SizeBit = sizeBit;
     }
     void addPageToBuddy(Page* t);
     void deletePageFromBuddy(Page *t);
     void setPageInfo(u64 pageInfoAddress, u64 pageAreaStart);
+    Page* getBuddyPage(Page *t) {
+      return (Page *)((u64)t ^ (1 << (t->SizeBit + PAGEINFO_SIZE_BIT)));
+    }
 public:
 	PageAllocator();
 	u64 PageToAddr(Page* t) {
@@ -136,7 +136,6 @@ protected:
 public:
     virtual void* Malloc(u16 size) = 0;
     virtual bool Free(void* addr) = 0;
-    Slab *Next;
 };
 
 class SlabNodeArea: public Slab {
@@ -144,8 +143,9 @@ class SlabNodeArea: public Slab {
     bool used;
 public:
     SlabNodeArea();
-    void* Malloc(u16 size);
-    bool Free(void* addr);
+    SlabNodeArea* Next;
+    void* Malloc(u16 size) override;
+    bool Free(void* addr) override;
 };
 
 class SlabArea: public Slab{
@@ -155,8 +155,9 @@ class SlabArea: public Slab{
     bool used;
 public:
     SlabArea();
-    void* Malloc(u16 size);
-    bool Free(void* addr);
+    SlabArea* Next;
+    void* Malloc(u16 size) override;
+    bool Free(void* addr) override;
 };
 
 class SlabNodeAllocator {
@@ -179,7 +180,6 @@ public:
 };
 
 extern void* KernelEnd;
-extern const u64 PageAreaStart;
 extern const u64 vaddrEnd;
 
 extern PageAllocator pageAllocator;

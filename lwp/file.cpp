@@ -25,7 +25,6 @@ int FileTable::Write(u64 fd, u8* buf, u64 size) {
 
 int FileTable::Getcwd(u8* buf, u64 size) {
     KernelUtil::Memcpy(buf,processController.CurrentProcess->pwd,128);
-    //int *ret = (int *)buf; 
     return 100;
 }
 

@@ -39,13 +39,13 @@ void MMU::AddItem(u64 vaddr, u64 paddr, ZoneConfig &config)
         p3->pa = (u64) pageAllocator.AllocPageMem(0) >> 12;
     }
 
-    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 13) << 1);
+    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 12));
     PTE* p5 = p4 + 1;
     setConfig(p4, config);
     setConfig(p5, config);
-    p4->pa = (paddr >> 12) & (~1ull);
+    p4->pa = (paddr >> 12);
     __ldpte_d(p4, 0);
-    p5->pa = (paddr >> 12) | 1;
+    p5->pa = (paddr >> 12) + 1;
     __ldpte_d(p5, 1);
 }
 
@@ -60,7 +60,7 @@ void MMU::DeleteItem(u64 vaddr)
     PTE* p3 = (PTE*) (p2->pa << 12) + getPartical(vaddr, 29, 21);
     if (p3->p == 0) return;
 
-    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 13) << 1);
+    PTE* p4 = (PTE*) (p3->pa << 12) + (getPartical(vaddr, 20, 12));
     p4->p = 0;
     PTE* p5 = p4 + 1;
     p5->p = 0;

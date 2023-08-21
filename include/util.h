@@ -33,7 +33,6 @@ namespace KernelUtil {
     char* Strchr(const char* str, char ch);
     char ToUpper(char c);
     int IsLower(int c);
-
 };
 
 u64 getCPUCFG(u64 input);

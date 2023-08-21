@@ -8,7 +8,6 @@
 #include <sdcard.h>
 #include <fat32.h>
 
-const u64 PageAreaStart = upAlign((u64 ) &KernelEnd, PAGE_SIZE_BIT);
 const u64 vaddrEnd = 1ull << (getPartical(getCPUCFG(1), 19, 12) - 1);
 
 UART uPut((u8 *)(0x800000001ff40800llu));
@@ -67,13 +66,10 @@ extern "C" void KernelMain() {
     initMem();
     initException();
 
-    fat32_mount();
-    file *f = new file;
-    open("write", f);
-    char *p = new char [f->size];
-    read(f, (u8 *) p ,f->size);
 
-    ELFProgram program(p);
+    fat32_mount();
+
+    ELFProgram program("open");
     program.CreateProcess();
 
     SysTimer.TimerOn();

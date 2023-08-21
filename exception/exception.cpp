@@ -19,7 +19,7 @@ void Exception::IntOn(){
 void Exception::HandleDefaultException() {
     u64 estate = __csrrd_d(0x5);
     switch (getPartical(estate, 21, 16)) {
-        case 0:
+        case 0: {
             for (u8 intrOp = 12; intrOp >= 0; --intrOp) {
                 if (estate & (1 << intrOp)) {
                     switch (intrOp) {
@@ -32,7 +32,8 @@ void Exception::HandleDefaultException() {
                 }
             }
             break;
-        case 0xB:
+        }
+        case 0xB: {
             extern u64 ContextReg[30];
             char* addr;
             switch (ContextReg[9]) {
@@ -92,8 +93,9 @@ void Exception::HandleDefaultException() {
             }
             __csrwr_d(__csrrd_d(0x6) + 4, 0x6);
             break;
+        }
         case 0x1:
-        case 0x2:
+        case 0x2: {
             uPut << "Page Invalid\n";
             uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
             uPut << "BADV: " << (void*) __csrrd_d(0x7) << '\n';
@@ -107,13 +109,15 @@ void Exception::HandleDefaultException() {
             uPut << "TLBELO0: " << (void*) __csrrd_d(0x12) << '\n';
             uPut << "TLBELO1: " << (void*) __csrrd_d(0x13) << '\n';
             while (1);
-        default:
+        }
+        default: {
             uPut << "Exception\n";
             uPut << "ESTATE: " << (void*) estate << '\n';
             uPut << "ERA: " << (void*) __csrrd_d(0x6) << '\n';
             uPut << "BADV: " << (void*) __csrrd_d(0x7) << '\n';
             uPut << "BADI: " << (void*) __csrrd_d(0x8) << '\n';
             while (1);
+        }
     }
 }
 

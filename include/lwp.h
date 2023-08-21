@@ -57,15 +57,13 @@ class ELFProgram {
 public:
     ELFHeader *header;
     PHTB* phtb;
-    ELFProgram(void* addr);
+    ELFProgram(const char *filename);
     void ShowInfo();
     void CreateProcess();
 };
 
 class Process {
     MemSpace *space;
-    // TNode<Zone> *text;
-    // TNode<Zone> *stack;
     u64 reg[30];
     u64 sp;
     u64 pc;

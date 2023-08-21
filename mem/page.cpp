@@ -1,13 +1,16 @@
 #include <mem.h>
 
 PageAllocator::PageAllocator(){
-    setPageInfo(upAlign((u64)(&KernelEnd), PAGEINFO_SIZE_BIT + PAGE_GROUP_SIZE_BIT), PageAreaStart);
+    setPageInfo(upAlign((u64) (&KernelEnd), PAGEINFO_SIZE_BIT), 0);
 
     u64 mprEnd = upAlign((u64) pageInfo + ((0xFFFFFFFF - pageAreaStart + 1) >> (PAGE_SIZE_BIT - PAGEINFO_SIZE_BIT)), PAGE_SIZE_BIT) - 1;
 
-    AddArea(PageAreaStart, (u64) pageInfo - 1, 0);
-    AddArea((u64) pageInfo, mprEnd, 1);
-    AddArea(mprEnd + 1, 0xFFFFFFF, 0);
+    for (Page *i = pageInfo; i < pageInfo + ((0x100000000 - pageAreaStart) >> PAGE_SIZE_BIT); ++i) {
+        i->Valid = 0;
+    }
+
+    AddArea(0, mprEnd, 1);
+    AddArea(mprEnd + 1, 0xFFFFFFFF, 0);
     AddArea(0x10000000, 0x7FFFFFFF, 1);
     AddArea(0x80000000, 0xFFFFFFFF, 0);
 }
@@ -20,9 +23,20 @@ void PageAllocator::setPageInfo(u64 pageInfoAddress, u64 pageAreaStart)
 
 void PageAllocator::AddArea(u64 start, u64 end, bool isMaskedAsIllegal)
 {
-    u8 currentPageSizeBit = PAGE_GROUP_SIZE_BIT - 1;
+    u64 pt = start;
+    u8 currentPageSizeBit = 0;
     Page *t;
-    for (u64 pt = start; pt <= end; pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
+    while (1) {
+        while ((pt & (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) == 0 && currentPageSizeBit < PAGE_GROUP_SIZE_BIT - 1) ++currentPageSizeBit;
+        if (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) - 1 > end) break;
+        t = AddrToPage(pt);
+        setupPage(t, isMaskedAsIllegal ? PAGE_GROUP_SIZE_BIT : currentPageSizeBit);
+        if (!isMaskedAsIllegal) addPageToBuddy(t);
+        pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT));
+    }
+    for (; pt <= end;
+         pt += (1 << (currentPageSizeBit + PAGE_SIZE_BIT))) {
+
         while (pt + (1 << (currentPageSizeBit + PAGE_SIZE_BIT)) - 1 > end) --currentPageSizeBit;
         t = AddrToPage(pt);
         setupPage(t, isMaskedAsIllegal ? PAGE_GROUP_SIZE_BIT : currentPageSizeBit);

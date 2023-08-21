@@ -1,10 +1,16 @@
 #include <lwp.h>
 
-ELFProgram::ELFProgram(void* addr) {
-    header = (ELFHeader*) addr;
+ELFProgram::ELFProgram(const char* filename) {
+    file *f = new file;
+    open(filename, f);
+    char *p = new char [f->size];
+    read(f, (u8 *) p ,f->size);
+
+    header = (ELFHeader*) p;
     if (header->MagicNum == 0x464C457F) {
-        phtb = (PHTB*) ((u64) addr + header->PHTBAddr);
+        phtb = (PHTB*) ((u64) p + header->PHTBAddr);
     }
+    delete f;
 }
 
 void ELFProgram::ShowInfo() {

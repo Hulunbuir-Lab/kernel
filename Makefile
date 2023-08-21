@@ -2,15 +2,15 @@
 
 CXXFLAGS = -march=loongarch64 -mabi=lp64d -g -std=c++20 -fno-stack-protector -nostartfiles -Iinclude -fno-rtti -fno-exceptions
 LDFLAGS = -Tkernel.ld -g -std=c++20 -fno-stack-protector -nostartfiles -fno-rtti -fno-exceptions
-SOURCES = $(wildcard kernel.cpp \
+SOURCES = $(wildcard uart/*.cpp \
+		     mem/*.cpp \
+		     kernel.cpp \
 		     util/*.cpp \
-		     uart/*.cpp \
 		     exception/*.cpp \
 		     timer/*.cpp \
 		     lwp/*.cpp \
 		     sdcard/*.cpp \
 		     fs/*.cpp \
-		     mem/*.cpp \
 	   )
 
 OBJS = loader.o exception/context.o $(SOURCES:%.cpp=%.o)
